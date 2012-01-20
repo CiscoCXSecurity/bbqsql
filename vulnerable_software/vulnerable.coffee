@@ -3,7 +3,7 @@ http = require 'http'
 DATAS = ['hello','world']
 HOST  = "127.0.0.1"
 PORT  = 1337
-DEBUG = false
+DEBUG = true
 
 
 cmp = (x,y) ->
@@ -35,7 +35,7 @@ server = http.createServer (req,res) ->
         args = args[0]
     catch err
         res.status = 200
-        return res.end "you fucked up"
+        return res.end "you messed up"
     try
         charval = args['charval']
         charpos = args['charpos'] - 1
@@ -55,7 +55,7 @@ server = http.createServer (req,res) ->
         #test to see if their sqli query was true.
         cmp_return = cmp(charval,cmp_char)
         debug "cmp_returns: #{cmp_return}"
-        cmp_method = {'gt':1,'lt':-1,'eq':0}[cmp_method]
+        cmp_method = {'>':1,'<':-1,'=':0}[cmp_method]
         debug "cmp_method: #{cmp_method}"
         throw "False" if cmp_return != cmp_method
 

