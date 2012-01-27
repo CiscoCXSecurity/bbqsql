@@ -1,11 +1,9 @@
-##NOT FINISHED##
 ##mastahyeti 2011##
-from requests import async
-from gevent.pool import Pool
 from copy import copy
-import gevent
 import debug
 from sys import stdout
+from gevent.pool import Pool
+import time
 
 CHARSET = [chr(x) for x in xrange(32,127)]
 #CHARSET = [chr(x) for x in xrange(32,39)] + [chr(x) for x in xrange(40,127)] #everything but '
@@ -47,7 +45,7 @@ class Query(object):
     hello Ben
     '''
     @debug.func
-    def __init__(self,q_string,options=None):
+    def __init__(self,q_string,options=None,encoder=None):
         '''
         q_string syntax is "SELECT ${blah:default_blah}, ${foo:default_foo} from ${asdf:default_asdf}". 
         The options are specified in ${}, with the value before the ':' being the option name
@@ -56,6 +54,7 @@ class Query(object):
         There is an optional options parameter that allows you to set the option values manually rather than
         having them be parsed.
         '''
+        self.encoder = encoder
         self.q_string = q_string
         if options:
             self.options = options
@@ -125,6 +124,8 @@ class Query(object):
                 right = '}'.join(split[1:])
                 ident = left.split(':')[0]
                 val = self.options[ident]
+                if self.encoder != None:
+                    val = self.encoder(val)
                 output += val
                 output += right
         return output
@@ -142,7 +143,9 @@ class Technique(object):
     def __init__(self,make_request_func,query,concurrency=1): 
         self.query = query
         self.make_request_func = make_request_func
-        if type(self) == technique:
+        self.pool = Pool(size=concurrency)
+
+        if type(self) == Technique:
             raise NotImplemented
 
     def run(self):
@@ -154,8 +157,9 @@ class Technique(object):
 
 class BlindTechnique(Technique):
     @debug.func
-    def run(self,user_query):
-        
+    def run(self,user_query,sleep=1):
+        self.sleep = sleep
+
         user_query = user_query
 
         try:
@@ -199,19 +203,15 @@ class BlindTechnique(Technique):
         low = 0
         high = CHARSET_LEN
         while low < high:
-            mid = (low+high)//2
-            update_char(CHARSET[mid])
+            mid = (low+high)/2
             if self._is_greater(row_index, char_index, CHARSET[mid],user_query):
                 high = mid
+            elif self._is_less(row_index, char_index, CHARSET[mid],user_query):
+                low = mid + 1
+            elif low < CHARSET_LEN and self._is_equal(row_index, char_index, CHARSET[mid],user_query):
+                return CHARSET[mid]
             else:
-                low = mid
-        mid = (low+high)//2
-        if low < CHARSET_LEN and self._is_equal(row_index, char_index, CHARSET[mid],user_query):
-            update_char()
-            return CHARSET[mid]
-        else:
-            end_line()
-            return False
+                return False
     
     @debug.func
     def _is_greater(self,row_index,char_index,char_val,user_query):
@@ -228,7 +228,26 @@ class BlindTechnique(Technique):
         query.set_option('comparator','>')
         query_string = query.render()
         #if the response differs from the base_response, we return true
-        return self.make_request_func(query_string) != self.base_response
+        rval = self.make_request_func(query_string) != self.base_response
+        return rval
+
+    @debug.func
+    def _is_less(self,row_index,char_index,char_val,user_query):
+        '''
+        Returns true if the specified character in the specified row is les
+        than char_value. It is up to you how to implement this...
+        '''
+        query = copy(self.query)
+        query.set_option('user_query',user_query)
+        query.set_option('row_index',str(row_index))
+        query.set_option('char_index',str(char_index))
+        query.set_option('char_val',str(ord(char_val)))
+        query.set_option('sleep',str(self.sleep))
+        query.set_option('comparator','<')
+        query_string = query.render()
+        #if the response differs from the base_response, we return true
+        rval = self.make_request_func(query_string) != self.base_response
+        return rval
 
     @debug.func
     def _is_equal(self,row_index,char_index,char_val,user_query):
@@ -244,9 +263,10 @@ class BlindTechnique(Technique):
         query.set_option('sleep',str(self.sleep))
         query.set_option('comparator','=')
         query_string = query.render()
-        res = self.make_request_func(query_string)
+
         #if the response differs from the base_response, we return true
-        return self.make_request_func(query_string) != self.base_response
+        rval = self.make_request_func(query_string) != self.base_response
+        return rval
     
     @debug.func
     def _make_base_request(self):
@@ -254,7 +274,9 @@ class BlindTechnique(Technique):
         Makes the base request to which all subsequent requests will be compared.
         The need for a base request is just a fact when dealing with blind sqli
         '''
-        self.base_response = self.make_request_func()
+        query = copy(self.query)
+        query_string = query.render()
+        self.base_response = self.make_request_func(query_string)
 
 
 class Requester(object):
@@ -287,45 +309,32 @@ class Requester(object):
         else:
             args = [new_request]
 
-        if not hasattr(func,"__call__"):
+        if not hasattr(function_to_call,"__call__"):
             raise Exception('the send_request_function you passed to Requester doesnt exist in the request object you passed')
+
+        response = function_to_call(*args)
         
-        return Response( response = function_to_call(*args) , cmp_function = self.response_cmp_function )
+        return Response( response = response , cmp_function = self.response_cmp_function )
         
+
 
 class Response(object):
     '''
-    This object is essentially a proxy for whatever type of response object you pass to it.
-    The value is that you are able to assign a function for doing comparisons.
+    This object wraps the requests type of your choosing, altering the
+    comparison methods to better suite your needs.
     '''
     @debug.func
     def __init__( self , response , cmp_function = cmp ):
         self.response = response
         self.cmp_function = cmp_function
-
-    def __getattr__( self , attr ):
-        return self.response.__getattr__( attr )
-    
-    def __setattr__( self , attr , value ):
-        return self.response.__setattr__(attr,value)
-    
-    def __getitem__( self , key ):
-        return self.response.__getitem__(key)
-    
-    def __setitem__( self , key , value ):
-        return self.response.__setitem__(key,value)
-    
     def __gt__( self , y ):
-        return self.cmp_function(self,y) > 0
-    
+        return self.cmp_function(self.response,y.response) > 0
     def __lt__( self , y ):
-        return self.cmp_function(self,y) < 0
-    
+        return self.cmp_function(self.response,y.response) < 0
     def __eq__( self , y ):
-        return self.cmp_function(self,y) == 0
-    
+        return self.cmp_function(self.response,y.response) == 0
     def __ne__( self , y ):
-        return self.cmp_function(self,y) == 0
+        return self.cmp_function(self.response,y.response) != 0
     
 
 @debug.func

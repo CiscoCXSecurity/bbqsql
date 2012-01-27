@@ -1,24 +1,57 @@
 import unittest
 import bbqsql
 import requests
+from urllib import quote
+from time import time
 #We don't need all the output....
 bbqsql.QUIET = True
 
+def loose_time_cmp(x,y):
+    #times will never match up exactly, so we fudge it a bit
+    x = x.response_time
+    y = y.response_time
+    if abs(x - y) / ((float(x)+y)/2) < 1:
+        return 0
+    if x > y:
+        return 1
+    return -1
+
+def my_sender(request):
+    #we need a single function that can send requests
+    if request.send():
+        return request.response
+    else:
+        raise 
+
+def pre_hook(request):
+    #hooks for the requests module
+    request.start_time = time()
+    return request
+
+def post_hook(request):
+    #hooks for the requests module
+    request.response.response_time = time() - request.start_time
+    return request
+
+
 class TestTimeTechnique(unittest.TestCase):
     def test_blind(self):
-            url = bbqsql.Query('http://127.0.0.1:1337/q=${}')
-            query = bbqsql.Query("[{foo:\"${user_query:unimportant'}\",row:${row_index:0},charpos:${char_index:0},charval:${char_val:65},sleep:${sleep:.1},comparator:\"=\"}]")
+        url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
+        query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:0}&char_index=${char_index:0}&test_char=${char_val:65}&cmp=${comparator:false}&sleep=${sleep:1}",encoder=quote)
 
-            #build a requests.Session object to hold settings
-            session = requests.Session(return_response=False)
-            #build a request object (but don't send it)
-            request = session.get(url)
-            #build a bbqsql.Requester object 
-            requester = bbqsql.Requester(request,)
+        #build a requests.Session object to hold settings
+        session = requests.Session()
+        #build a request object (but don't send it)
+        request = session.get(url,return_response=False,hooks = {'pre_request':pre_hook,'post_request':post_hook})
+        #build a bbqsql.Requester object 
+        requester = bbqsql.Requester(request = request, send_request_function = my_sender, response_cmp_function = loose_time_cmp)
 
-            tech = BlindTechnique(make_request_func=requester.make_request,sleep=.05)
-            results = tech.run('unimportant')
-            self.assertEqual(results,['hello','world'])
+        x = requester.make_request('foobar')
+
+        tech = bbqsql.BlindTechnique(make_request_func=requester.make_request,query=query,concurrency=1)
+        results = tech.run('unimportant',sleep=.1)
+
+        self.assertEqual(results,['hello','world'])
 
 
 class TestQuery(unittest.TestCase):
