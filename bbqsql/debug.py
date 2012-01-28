@@ -1,7 +1,6 @@
+from .settings import *
+
 import functools
-DEBUG_FUNCTION_CALL = True
-DEBUG_FUNCTION_RETURN = False
-debug_markers = "##> "
 
 def func(f):
 	'''function debuger'''
@@ -22,7 +21,7 @@ def _debug_function_return(f,r):
 	_print("Returning from: %s\n\tWith rval: %s\n" % (f.__name__,str(r)))
 
 def _print(s):
-	print debug_markers + str(s)
+	print DEBUG_MARKER + str(s)
 
 @func
 def _test(arg1,arg2,k="value"):

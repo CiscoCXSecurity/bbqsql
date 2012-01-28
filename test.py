@@ -1,5 +1,5 @@
-import unittest
 import bbqsql
+import unittest
 import requests
 from urllib import quote
 from time import time
@@ -34,7 +34,7 @@ def post_hook(request):
     return request
 
 
-class TestTimeTechnique(unittest.TestCase):
+class TestTimeBlindTechniqueRequester(unittest.TestCase):
     def test_blind(self):
         url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
         query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:0}&char_index=${char_index:0}&test_char=${char_val:65}&cmp=${comparator:false}&sleep=${sleep:1}",encoder=quote)
@@ -46,7 +46,31 @@ class TestTimeTechnique(unittest.TestCase):
         #build a bbqsql.Requester object 
         requester = bbqsql.Requester(request = request, send_request_function = my_sender, response_cmp_function = loose_time_cmp)
 
-        x = requester.make_request('foobar')
+        tech = bbqsql.BlindTechnique(make_request_func=requester.make_request,query=query,concurrency=1)
+        results = tech.run('unimportant',sleep=.1)
+
+        self.assertEqual(results,['hello','world'])
+
+
+class TestTimeBlindTechniqueHTTPRequester(unittest.TestCase):
+    def test_content_based(self):
+        url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
+        query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:0}&char_index=${char_index:0}&test_char=${char_val:65}&cmp=${comparator:false}&sleep=${sleep:1}",encoder=quote)
+
+        #build a bbqsql.Requester object 
+        requester = bbqsql.HTTPRequester(url = url , response_cmp_attribute = "content")
+
+        tech = bbqsql.BlindTechnique(make_request_func=requester.make_request,query=query,concurrency=1)
+        results = tech.run('unimportant',sleep=.1)
+
+        self.assertEqual(results,['hello','world'])
+
+    def test_time_based(self):
+        url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
+        query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:0}&char_index=${char_index:0}&test_char=${char_val:65}&cmp=${comparator:false}&sleep=${sleep:1}",encoder=quote)
+
+        #build a bbqsql.Requester object 
+        requester = bbqsql.HTTPRequester(url = url , response_cmp_attribute = "response_time")
 
         tech = bbqsql.BlindTechnique(make_request_func=requester.make_request,query=query,concurrency=1)
         results = tech.run('unimportant',sleep=.1)
