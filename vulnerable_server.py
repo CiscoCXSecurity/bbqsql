@@ -16,7 +16,7 @@ class VulnerableServer:
         self.port = port
 
         self.comparators = ['<','=','>','false']
-
+    
         http.HTTPServer((self.address,self.port), self.callback).serve_forever() 
 
     def callback(self,request):

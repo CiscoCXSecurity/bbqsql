@@ -1,10 +1,14 @@
 import bbqsql
+
 import unittest
 import requests
 from urllib import quote
 from time import time
+
+
 #We don't need all the output....
 bbqsql.QUIET = True
+
 
 def loose_time_cmp(x,y):
     #times will never match up exactly, so we fudge it a bit
@@ -34,8 +38,8 @@ def post_hook(request):
     return request
 
 
-class TestTimeBlindTechniqueRequester(unittest.TestCase):
-    def test_blind(self):
+class TestBlindTechnique(unittest.TestCase):
+    def test_time_blind_technique_requester(self):
         url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
         query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:0}&char_index=${char_index:0}&test_char=${char_val:65}&cmp=${comparator:false}&sleep=${sleep:1}",encoder=quote)
 
@@ -51,9 +55,7 @@ class TestTimeBlindTechniqueRequester(unittest.TestCase):
 
         self.assertEqual(results,['hello','world'])
 
-
-class TestTimeBlindTechniqueHTTPRequester(unittest.TestCase):
-    def test_content_based(self):
+    def test_time_blind_technique_http_requester_content_based(self):
         url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
         query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:0}&char_index=${char_index:0}&test_char=${char_val:65}&cmp=${comparator:false}&sleep=${sleep:1}",encoder=quote)
 
@@ -65,7 +67,7 @@ class TestTimeBlindTechniqueHTTPRequester(unittest.TestCase):
 
         self.assertEqual(results,['hello','world'])
 
-    def test_time_based(self):
+    def test_time_blind_technique_http_requester_time_based(self):
         url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
         query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:0}&char_index=${char_index:0}&test_char=${char_val:65}&cmp=${comparator:false}&sleep=${sleep:1}",encoder=quote)
 
@@ -79,14 +81,14 @@ class TestTimeBlindTechniqueHTTPRequester(unittest.TestCase):
 
 
 class TestQuery(unittest.TestCase):
-    def test_instantiate_without_options(self):
+    def test_query_without_options(self):
         query_string = "SELECT ${blah:default_blah}, ${foo:default_foo} from ${asdf:default_asdf}"
         q = bbqsql.Query(query_string)
         s = q.render()
         should_be = "SELECT default_blah, default_foo from default_asdf"
         self.assertEqual(s,should_be)
 
-    def test_instantiate_with_options(self):
+    def test_query_with_options(self):
         query_string = "SELECT ${blah}, ${foo} from ${asdf}"
         options = {'blah':'test_blah','foo':'test_foo','asdf':'test_asdf'}
         q = bbqsql.Query(query_string,options)
