@@ -105,7 +105,5 @@ class TestQuery(unittest.TestCase):
         should_be = "SELECT new_blah, new_foo from new_asdf"
         self.assertEqual(s,should_be)
 
-
-
 if __name__ == "__main__":
     unittest.main() 

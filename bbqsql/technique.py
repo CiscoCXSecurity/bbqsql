@@ -47,7 +47,7 @@ class BlindTechnique(Technique):
         row_index = 0
         row = True
         #we get more rows until the table is over
-        while row:
+        while row:            
             #if this isnt the first iteration
             if row != True:
                 results.append(row)
@@ -101,10 +101,10 @@ class BlindTechnique(Technique):
         query.set_option('char_index',str(char_index))
         query.set_option('char_val',str(ord(char_val)))
         query.set_option('sleep',str(self.sleep))
-        query.set_option('comparator','>')
+        query.set_option('comparator','<')
         query_string = query.render()
         #if the response differs from the base_response, we return true
-        rval = self.make_request_func(query_string) != self.base_response
+        rval = self.make_request_func(query_string) == self.base_response
         return rval
 
     @debug.func
@@ -119,10 +119,10 @@ class BlindTechnique(Technique):
         query.set_option('char_index',str(char_index))
         query.set_option('char_val',str(ord(char_val)))
         query.set_option('sleep',str(self.sleep))
-        query.set_option('comparator','<')
+        query.set_option('comparator','>')
         query_string = query.render()
         #if the response differs from the base_response, we return true
-        rval = self.make_request_func(query_string) != self.base_response
+        rval = self.make_request_func(query_string) == self.base_response
         return rval
 
     @debug.func
@@ -141,7 +141,7 @@ class BlindTechnique(Technique):
         query_string = query.render()
 
         #if the response differs from the base_response, we return true
-        rval = self.make_request_func(query_string) != self.base_response
+        rval = self.make_request_func(query_string) == self.base_response
         return rval
     
     @debug.func
