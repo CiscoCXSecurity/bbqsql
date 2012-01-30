@@ -9,23 +9,24 @@ import eventlet
 from eventlet import wsgi
 from eventlet.green import time
 from urlparse import parse_qs
+import urllib2
 
 # Database constants
 datas = ['hello','world']
 
 # Different comparators BBsql uses
-comparators = ['<','=','>','false']
+comparators = ['>','=','<','false']
 
 
 def parse_response(env, start_response):
     '''Parse out all necessary information and determine if the query resulted in a match'''
     try:
-        params =  parse_qs(env['QUERY_STRING'])
+        params =  parse_qs(urllib2.unquote(env['QUERY_STRING']))
 
         # Extract out all of the sqli information
         row_index =  int(params['row_index'].pop(0))
-        char_index = int(params['character_index'].pop(0))
-        test_char = str(params['character_value'].pop(0))
+        char_index = int(params['character_index'].pop(0)) - 1
+        test_char = int(params['character_value'].pop(0)) 
         comparator = comparators.index(params['comparator'].pop(0)) - 1
         sleep_int = int(params['sleep'].pop(0))
 
@@ -38,7 +39,7 @@ def parse_response(env, start_response):
         return response
     except:
         start_response('400 Bad Request', [('Content-Type', 'text/plain')])
-        return ['error\r\n']
+        return ['ereror\r\n']
 
 
 def time_based_blind(test_char, current_character, comparator, sleep_int, start_response):
@@ -80,7 +81,7 @@ def boolean_based_size(test_char, current_character, comparator, env, start_resp
             return ['Hello, no match!\r\n']
     except:
         start_response('400 Bad Request', [('Content-Type', 'text/plain')])
-        return ['error\r\n']
+        return ['eerrrrrrrror\r\n']
         
 # Dict of the type's of tests, so pass your /path to execute that type of test
 types = {'/time':time_based_blind,'/error':boolean_based_error,'/boolean':boolean_based_size} 
