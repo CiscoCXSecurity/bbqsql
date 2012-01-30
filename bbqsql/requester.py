@@ -13,10 +13,15 @@ def loose_cmp(cmp_var):
         #times will never match up exactly, so we fudge it a bit
         x = getattr(x,cmp_var)
         y = getattr(y,cmp_var)
-        if abs(x - y) / ((float(x)+y)/2) < 1:
+        variance = abs(x - y) / ((float(x)+y)/2)
+        print variance
+        if variance < 1:
+            print "Equal\n"
             return 0
         if x > y:
+            print "GT\n"
             return 1
+        print "LT\n"
         return -1
     return wrapper
 
