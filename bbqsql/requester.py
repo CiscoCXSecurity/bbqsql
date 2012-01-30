@@ -4,28 +4,40 @@ from . import debug
 
 from copy import copy
 from time import time
+from difflib import SequenceMatcher
 import requests
 
 
-def loose_cmp(cmp_var):
+def loose_cmp_numeric(cmp_var):
     #response_time
     def wrapper(x,y):
         #times will never match up exactly, so we fudge it a bit
         x = getattr(x,cmp_var)
         y = getattr(y,cmp_var)
         variance = abs(x - y) / ((float(x)+y)/2)
-        print variance
         if variance < 1:
-            print "Equal\n"
             return 0
         if x > y:
-            print "GT\n"
             return 1
-        print "LT\n"
         return -1
     return wrapper
 
-def response_cmp(cmp_var):
+def loose_cmp_text(cmp_var):
+    def wrapper(x,y):
+        #print x.content
+        #print y.content
+        x = getattr(x,cmp_var)
+        y = getattr(y,cmp_var)
+        variance = SequenceMatcher(lambda x:False,x,y).get_()
+        if variance > 0.88:
+            return 0
+        if x > y:
+            return 1
+        return -1
+    return wrapper
+
+
+def strict_cmp(cmp_var):
     def wrapper(x,y):
         x = getattr(x,cmp_var)
         y = getattr(y,cmp_var)
@@ -104,18 +116,13 @@ class HTTPRequester(Requester):
     #these are attributes that cannot be directly compared
     #and for which the loose_cmp function needs to be used 
     #instead of the response_cmp.
-    LOOSE_ATTRIBUTES = ['response_time']
+    CMPS = {'response_time':loose_cmp_numeric('response_time'),\
+            'content':loose_cmp_text('content'),\
+            'text':loose_cmp_text('content')}
 
     @debug.func
     def __init__(self,url,method='GET',data = None,send_request_function=requests_send,response_cmp_attribute = "content"):
-        if response_cmp_attribute in self.LOOSE_ATTRIBUTES:
-            #certain requests.Response attributes cannot be compared directly because they will
-            #not exactly match eachother between identical requests. For these, we use "loose" 
-            #comparison which allows for some variance.
-            response_cmp_function=loose_cmp(response_cmp_attribute)
-        else:
-            #build out response comparison function based on the specified parameter
-            response_cmp_function=response_cmp(response_cmp_attribute)
+        response_cmp_function = self.CMPS.get(response_cmp_attribute,strict_cmp)
 
         #build a requests.Session object to hold settings
         session = requests.Session()
