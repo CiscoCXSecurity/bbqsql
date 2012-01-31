@@ -34,3 +34,4 @@ from .technique import Technique,BlindTechnique
 from . import settings
 from .requester import *
 from .exceptions import *
+from .truth import *

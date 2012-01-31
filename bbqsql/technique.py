@@ -1,6 +1,7 @@
 #file: technique.py
 
 from . import debug
+from .truth import Truth
 from .settings import *
 from .exceptions import *
 
@@ -32,16 +33,22 @@ class Technique(object):
 
 
 class BlindTechnique(Technique):
+    def __init__(self,truth = Truth(), *args, **kwargs):
+        self.truth = truth
+        super(BlindTechnique,self).__init__(*args,**kwargs)
+
+        tmp_query = copy(self.query)
+        query_string = tmp_query.render()
+
+        #get some base values to compare out tests against
+        for i in range(10):
+            self.truth.add_true(self.make_request_func(query_string))
+
     @debug.func
     def run(self,user_query,sleep=1):
         self.sleep = sleep
 
         user_query = user_query
-
-        try:
-            self.base_response
-        except AttributeError:
-            self._make_base_request()
     
         results = []
         row_index = 0
@@ -103,9 +110,8 @@ class BlindTechnique(Technique):
         query.set_option('sleep',str(self.sleep))
         query.set_option('comparator','<')
         query_string = query.render()
-        #if the response differs from the base_response, we return true
-        rval = self.make_request_func(query_string) == self.base_response
-        return rval
+
+        return self.truth.test(self.make_request_func(query_string))
 
     @debug.func
     def _is_less(self,row_index,char_index,char_val,user_query):
@@ -121,9 +127,8 @@ class BlindTechnique(Technique):
         query.set_option('sleep',str(self.sleep))
         query.set_option('comparator','>')
         query_string = query.render()
-        #if the response differs from the base_response, we return true
-        rval = self.make_request_func(query_string) == self.base_response
-        return rval
+
+        return self.truth.test(self.make_request_func(query_string))
 
     @debug.func
     def _is_equal(self,row_index,char_index,char_val,user_query):
@@ -140,16 +145,4 @@ class BlindTechnique(Technique):
         query.set_option('comparator','=')
         query_string = query.render()
 
-        #if the response differs from the base_response, we return true
-        rval = self.make_request_func(query_string) == self.base_response
-        return rval
-    
-    @debug.func
-    def _make_base_request(self):
-        '''
-        Makes the base request to which all subsequent requests will be compared.
-        The need for a base request is just a fact when dealing with blind sqli
-        '''
-        query = copy(self.query)
-        query_string = query.render()
-        self.base_response = self.make_request_func(query_string)
+        return self.truth.test(self.make_request_func(query_string))
