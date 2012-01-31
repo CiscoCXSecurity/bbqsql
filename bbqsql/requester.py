@@ -1,48 +1,17 @@
 from .query import Query
-from .response import Response
 from . import debug
 
 from copy import copy
 from time import time
+
 import requests
-
-
-def loose_cmp(cmp_var):
-    #response_time
-    def wrapper(x,y):
-        #times will never match up exactly, so we fudge it a bit
-        x = getattr(x,cmp_var)
-        y = getattr(y,cmp_var)
-        variance = abs(x - y) / ((float(x)+y)/2)
-        print variance
-        if variance < 1:
-            print "Equal\n"
-            return 0
-        if x > y:
-            print "GT\n"
-            return 1
-        print "LT\n"
-        return -1
-    return wrapper
-
-def response_cmp(cmp_var):
-    def wrapper(x,y):
-        x = getattr(x,cmp_var)
-        y = getattr(y,cmp_var)
-        if x == y:
-            return 0
-        if x > y:
-            return 1
-        return -1
-    return wrapper
 
 
 class Requester(object):
     @debug.func
-    def __init__( self , request , send_request_function ,  response_cmp_function = cmp ):
+    def __init__( self , request , send_request_function ):
         self.request = request
         self.send_request_function = send_request_function
-        self.response_cmp_function = response_cmp_function
     
     @debug.func
     def make_request(self,value=""):
@@ -72,7 +41,7 @@ class Requester(object):
 
         response = function_to_call(*args)
         
-        return Response( response = response , cmp_function = self.response_cmp_function )
+        return response
 
 
 def requests_send(request):
@@ -84,14 +53,15 @@ def requests_send(request):
     else:
         raise         
 
-def requests_time_pre_hook(request):
-    #hooks for the requests module
+def requests_pre_hook(request):
+    #hooks for the requests module to add some attributes
     request.start_time = time()
     return request
 
-def requests_time_post_hook(request):
-    #hooks for the requests module
+def requests_post_hook(request):
+    #hooks for the requests module to add some attributes
     request.response.response_time = time() - request.start_time
+    request.response.size = len(request.response.content)
     return request
 
 
@@ -101,26 +71,12 @@ class HTTPRequester(Requester):
     any crazy requests you should use the plain old bbqsql.Requester object. This
     object just abstracts away some of the tedious stuff for the base case...'''
 
-    #these are attributes that cannot be directly compared
-    #and for which the loose_cmp function needs to be used 
-    #instead of the response_cmp.
-    LOOSE_ATTRIBUTES = ['response_time']
-
     @debug.func
-    def __init__(self,url,method='GET',data = None,send_request_function=requests_send,response_cmp_attribute = "content"):
-        if response_cmp_attribute in self.LOOSE_ATTRIBUTES:
-            #certain requests.Response attributes cannot be compared directly because they will
-            #not exactly match eachother between identical requests. For these, we use "loose" 
-            #comparison which allows for some variance.
-            response_cmp_function=loose_cmp(response_cmp_attribute)
-        else:
-            #build out response comparison function based on the specified parameter
-            response_cmp_function=response_cmp(response_cmp_attribute)
-
+    def __init__(self,url,method='GET',send_request_function=requests_send,*args,**kwargs):
         #build a requests.Session object to hold settings
-        session = requests.Session()
+        session = requests.Session(*args,**kwargs)
         #build a request object (but don't send it)
-        request = session.request(url=url,method=method,data=data,return_response=False,hooks = {'pre_request':requests_time_pre_hook,'post_request':requests_time_post_hook})
+        request = session.request(url=url,method=method,return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook})
 
-        super(HTTPRequester,self).__init__(request, send_request_function,response_cmp_function)
+        super(HTTPRequester,self).__init__(request, send_request_function)
     

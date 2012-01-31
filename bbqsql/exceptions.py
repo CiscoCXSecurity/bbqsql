@@ -6,3 +6,10 @@ class NotImplemented(Exception):
         self.value = value
     def __repr__(self):
         return "This isn't implemented yet: " + self.value
+
+class TrueFalseRangeOverlap	(Exception):
+    '''Throw this exception when the nature of truth comes into question'''
+    def __init__(self, value):
+        self.value = value
+    def __repr__(self):
+        return "The nature of truth is no longer self-evident: " + self.value
