@@ -65,6 +65,8 @@ class LooseNumericTruth(Truth):
 
         if falses_mean < trues_mean:
             if falses_mean + fstd >= trues_mean - tstd:
+                print self.trues 
+                print self.falses 
                 raise TrueFalseRangeOverlap("truth and falsity overlap")
             
             middle = ((trues_mean - tstd) - (falses_mean + fstd)) / 2
@@ -73,6 +75,8 @@ class LooseNumericTruth(Truth):
 
         else:
             if falses_mean - fstd <= trues_mean + tstd:
+                print self.trues 
+                print self.falses 
                 raise TrueFalseRangeOverlap("truth and falsity overlap")
             
             middle = ((falses_mean + fstd) - (trues_mean - tstd)) / 2

@@ -48,7 +48,6 @@ def requests_send(request):
     '''out send_request_function. we need this because the requests library doesn't have a 
     good way to build a response without sending it and then send it having a response returned
     as opposed to a bool'''
-    print request.full_url
     if request.send():
         return request.response
     else:
