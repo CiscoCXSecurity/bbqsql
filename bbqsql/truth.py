@@ -10,7 +10,7 @@ class Truth(object):
     '''fancy object for establishing if an object is "True". This abstracts away some of
     the complicated decisions that can factor into the establishment of truth. its pretty deep'''
 
-    def __init__(self,trues = [], falses = [], comparison_attr = None, acceptable_deviation = .6):
+    def __init__(self, comparison_attr = None, acceptable_deviation = .6, trues = [], falses = []):
         '''
         :trues                  - a list of known true values
         :falses                 - a list of known false values
@@ -42,35 +42,44 @@ class Truth(object):
         else:
             return obj
 
+
 class LooseNumericTruth(Truth):
     '''test a numeric variable matches our preconceived notions of truth. 
     this will allow for some flexibility in determiniing this as determined by 
     acceptable_deviation'''
+
     def test(self,obj):
         '''test a value'''
 
-        t = False
-
         value = self._get_value(obj)
 
+        trues_mean  = mean(self.trues)
+        falses_mean = mean(self.falses)
+
+        tstd = std(self.trues)
+        fstd = std(self.falses)
+
         #this isn't going to work well if we don't have data built up
-        if not self.trues and not self.falses: 
+        if not self.trues or not self.falses: 
             raise Exception('you need to add some true or false values before you start tying to test truth...')
 
-        #if our value matches somethings from our list of true values, we go with True
-        if self.trues and abs(mean(self.trues) - value) <= std(self.trues) * self.acceptable_deviation: 
-            t = True 
+        if falses_mean < trues_mean:
+            if falses_mean + fstd >= trues_mean - tstd:
+                raise TrueFalseRangeOverlap("truth and falsity overlap")
+            
+            middle = ((trues_mean - tstd) - (falses_mean + fstd)) / 2
 
-        #if our value matches something from our list of false values, we stick with False
-        #if we already selected True, then we probably have a problem and should freak out.
-        if self.falses and abs(mean(self.falses) - value) <= std(self.falses) * self.acceptable_deviation and t:
-            raise TrueFalseRangeOverlap('the value matches both true and false cases... truth is meaningless')
-        
-        #keep out history to improve our accuracy
-        if t: 
-            self.trues.append(value)
-        else: 
-            self.falses.append(value)
+            rval = value > middle
+
+        else:
+            if falses_mean - fstd <= trues_mean + tstd:
+                raise TrueFalseRangeOverlap("truth and falsity overlap")
+            
+            middle = ((falses_mean + fstd) - (trues_mean - tstd)) / 2
+
+            rval = value < middle
+
+        [self.falses,self.trues][rval].append(value)
 
         #delete old trues / falses so we aren't doing all these heavy function calls on thousands of objects
         if len(self.trues) > 20:
@@ -79,7 +88,9 @@ class LooseNumericTruth(Truth):
         if len(self.falses) > 20:
             del(self.falses[0])
         
-        return t
+        return rval
+
+
 
 class LooseTextTruth(Truth):
     '''test a string variable matches our preconceived notions of truth. 

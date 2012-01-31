@@ -48,19 +48,21 @@ def requests_send(request):
     '''out send_request_function. we need this because the requests library doesn't have a 
     good way to build a response without sending it and then send it having a response returned
     as opposed to a bool'''
+    print request.full_url
     if request.send():
         return request.response
     else:
         raise         
 
-def requests_time_pre_hook(request):
-    #hooks for the requests module
+def requests_pre_hook(request):
+    #hooks for the requests module to add some attributes
     request.start_time = time()
     return request
 
-def requests_time_post_hook(request):
-    #hooks for the requests module
+def requests_post_hook(request):
+    #hooks for the requests module to add some attributes
     request.response.response_time = time() - request.start_time
+    request.response.size = len(request.response.content)
     return request
 
 
@@ -71,11 +73,11 @@ class HTTPRequester(Requester):
     object just abstracts away some of the tedious stuff for the base case...'''
 
     @debug.func
-    def __init__(self,url,method='GET',data = None,send_request_function=requests_send):
+    def __init__(self,url,method='GET',send_request_function=requests_send,*args,**kwargs):
         #build a requests.Session object to hold settings
-        session = requests.Session()
+        session = requests.Session(*args,**kwargs)
         #build a request object (but don't send it)
-        request = session.request(url=url,method=method,data=data,return_response=False,hooks = {'pre_request':requests_time_pre_hook,'post_request':requests_time_post_hook})
+        request = session.request(url=url,method=method,return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook})
 
         super(HTTPRequester,self).__init__(request, send_request_function)
     

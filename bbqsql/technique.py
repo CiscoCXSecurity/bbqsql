@@ -40,12 +40,8 @@ class BlindTechnique(Technique):
         tmp_query = copy(self.query)
         query_string = tmp_query.render()
 
-        #get some base values to compare out tests against
-        for i in range(10):
-            self.truth.add_true(self.make_request_func(query_string))
-
     @debug.func
-    def run(self,user_query,sleep=1):
+    def run(self,user_query,sleep=None):
         self.sleep = sleep
 
         user_query = user_query

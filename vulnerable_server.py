@@ -6,7 +6,7 @@ class VulnerableServer:
     def __init__(\
         self,\
         datas = ['hello','world'],\
-        messages = ["Doh","Yay"],\
+        messages = ["Doh","Hurray, you have discovered the truth, hence this excessivly long message that doesn't realy say much of any meaning or value."],\
         address = "127.0.0.1",\
         port = 1337):
 
