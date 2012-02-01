@@ -27,7 +27,7 @@ def post_hook(request):
     return request
 
 
-class TestBlindRequester(unittest.TestCase):
+'''class TestBlindRequester(unittest.TestCase):
     def test_exploit(self):
         url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
         query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:1}&char_index=${char_index:0}&test_char=${char_val:0}&cmp=${comparator:>}&sleep=${sleep:.5}",encoder=quote)
@@ -66,7 +66,7 @@ class TestBlindHTTPRequester(unittest.TestCase):
         tech = bbqsql.BlindTechnique(make_request_func=requester.make_request,query=query,concurrency=1, truth = mytruth)
         results = tech.run('unimportant',sleep=.5)
 
-        self.assertEqual(results,['hello','world'])
+        self.assertEqual(results,['hello','world'])'''
 
 
 class TestHTTPBlind(unittest.TestCase):    
