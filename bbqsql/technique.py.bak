@@ -8,6 +8,7 @@ from .exceptions import *
 import gevent
 from copy import copy
 
+import traceback,sys
 
 
 class Technique(object):
@@ -18,9 +19,12 @@ class Technique(object):
     The class init init will (almost?) always take a make_request_func as a param. This
     option specifies the function to call to make an actual request. 
     '''
-    def __init__(self,make_request_func,query): 
+    @debug.func
+    def __init__(self,make_request_func,query,concurrency=1): 
         self.query = query
         self.make_request_func = make_request_func
+        self.concurrency = concurrency
+        print "technique concurrency: %d" % self.concurrency
 
         if type(self) == Technique:
             raise NotImplemented
@@ -37,6 +41,7 @@ class BlindTechnique(Technique):
         self.truth = truth
         super(BlindTechnique,self).__init__(*args,**kwargs)
 
+    @debug.func
     def run(self,user_query,sleep=None):
         self.sleep = sleep
 
@@ -54,6 +59,7 @@ class BlindTechnique(Technique):
             row_index += 1
         return results
 
+    @debug.func
     def _get_next_row(self,row_index,user_query):
         '''finding a row'''
         row = ""
@@ -64,6 +70,7 @@ class BlindTechnique(Technique):
             #if this isnt the first iteration
             if char != True:
                 row += char
+                print "\t\t\t%s" % row
             char = self._get_next_char(char_index,row_index,user_query)
 
             char_index += 1
@@ -72,6 +79,7 @@ class BlindTechnique(Technique):
         else:
             return False
 
+    @debug.func
     def _get_next_char(self,char_index,row_index,user_query):
         '''finding a character'''
         low = 0
@@ -79,17 +87,18 @@ class BlindTechnique(Technique):
         while low < high:
             mid = (low+high)/2
             if self._is_greater(row_index, char_index, CHARSET[mid],user_query):
-                #print "data[%d][%d] < %s (%d)" % (row_index,char_index,CHARSET[mid],mid)
+                print "data[%d][%d] < %s (%d)" % (row_index,char_index,CHARSET[mid],mid)
                 high = mid
             elif self._is_less(row_index, char_index, CHARSET[mid],user_query):
-                #print "data[%d][%d] > %s (%d)" % (row_index,char_index,CHARSET[mid],mid)
+                print "data[%d][%d] > %s (%d)" % (row_index,char_index,CHARSET[mid],mid)
                 low = mid + 1
             elif low < CHARSET_LEN and self._is_equal(row_index, char_index, CHARSET[mid],user_query):
-                #print "data[%d][%d] = %s (%d)" % (row_index,char_index,CHARSET[mid],ord(CHARSET[mid]))
+                print "data[%d][%d] = %s (%d)" % (row_index,char_index,CHARSET[mid],ord(CHARSET[mid]))
                 return CHARSET[mid]
             else:
                 return False
     
+    @debug.func
     def _is_greater(self,row_index,char_index,char_val,user_query):
         '''
         Returns true if the specified character in the specified row is greater
@@ -106,6 +115,7 @@ class BlindTechnique(Technique):
 
         return self.truth.test(self.make_request_func(query_string))
 
+    @debug.func
     def _is_less(self,row_index,char_index,char_val,user_query):
         '''
         Returns true if the specified character in the specified row is les
@@ -122,6 +132,7 @@ class BlindTechnique(Technique):
 
         return self.truth.test(self.make_request_func(query_string))
 
+    @debug.func
     def _is_equal(self,row_index,char_index,char_val,user_query):
         '''
         Returns true if the specified character in the specified row is equal
@@ -151,28 +162,36 @@ class Character:
 
         self.char_val = CHARSET[len(CHARSET)//2]
 
-        self.error = False
+        self.done       = False
+        self.error      = False
 
+    @debug.func
     def go(self):
         '''keep trying to figure out this character's value. each time this method is called a request will be sent'''
-        low = 0
-        high = CHARSET_LEN        
-        while low < high:
-            mid = (low+high)//2
-            self.char_val = CHARSET[mid]
-            if self._is_greater(self.char_val):
-                #print "data[%d][%d] < %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],mid)
-                high = mid
-            elif self._is_less(self.char_val):
-                #print "data[%d][%d] > %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],mid)
-                low = mid + 1
-            elif low < CHARSET_LEN and self._is_equal(self.char_val):
-                #print "data[%d][%d] = %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],ord(CHARSET[mid]))
-                return True
-            else:
-                self.error = True
-                return False
+        try:
+            low = 0
+            high = CHARSET_LEN        
+            while low < high:
+                mid = (low+high)//2
+                self.char_val = CHARSET[mid]
+                if self._is_greater(CHARSET[mid]):
+                    print "data[%d][%d] < %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],mid)
+                    high = mid
+                elif self._is_less(CHARSET[mid]):
+                    print "data[%d][%d] > %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],mid)
+                    low = mid + 1
+                elif low < CHARSET_LEN and self._is_equal(CHARSET[mid]):
+                    print "data[%d][%d] = %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],ord(CHARSET[mid]))
+                    self.done = True
+                    return True
+                else:
+                    self.error = True
+                    return False
+        except gevent.GreenletExit:
+            # if the row is 10 chars long and we are on 15, this will get killed when the end is found...
+            pass
 
+    @debug.func
     def _is_greater(self,char_val):
         '''
         Returns true if the specified character in the specified row is greater
@@ -189,6 +208,7 @@ class Character:
 
         return self.truth.test(self.make_request_func(query_string))
 
+    @debug.func
     def _is_less(self,char_val):
         '''
         Returns true if the specified character in the specified row is les
@@ -205,6 +225,7 @@ class Character:
 
         return self.truth.test(self.make_request_func(query_string))
 
+    @debug.func
     def _is_equal(self,char_val):
         '''
         Returns true if the specified character in the specified row is equal
@@ -223,41 +244,103 @@ class Character:
 
     def __repr__(self):
         '''return a character if we have finished without errors'''
-        return [self.char_val,''][self.error]
+        return ['',self.char_val][self.done and (not self.error)]
 
     def __str__(self):
         '''return a character if we have finished without errors'''
-        return [self.char_val,''][self.error]
+        return ['',self.char_val][self.done and (not self.error)]
 
+    def __eq__(self,y):
+        '''return faled if we failed, working if we are still working, and a character if we have finished'''
+        if self.error:
+            return y=="failed"
+        elif not self.done:
+            return y=="working"
+        else:
+            return y==self.char_val
+    
+    def __ne__(self,y):
+        return not self.__eq__(y)
 
 class BlindTechniqueConcurrent(Technique):
+    def __init__(self,truth = Truth(), *args, **kwargs):
+        self.truth = truth
+        super(BlindTechniqueConcurrent,self).__init__(*args,**kwargs)
+
+    def __character_generator__(self,row_index=0,char_index=1):
+        while True:
+            yield Character(\
+                row_index           = row_index,\
+                char_index          = char_index,\
+                query               = self.query,\
+                user_query          = self.user_query,\
+                make_request_func   = self.make_request_func,\
+                truth               = self.truth,\
+                sleep               = self.sleep)
+            char_index += 1
+    
+    def __get_row__(self,row_index):
+        row = []
+        greenlet_row = []
+
+        size = self.concurrency
+        chargen = self.__character_generator__(row_index=row_index)
+
+        while "failed" not in row:
+            chars_needed = (size - row.count("working"))
+
+            for x in xrange(chars_needed):
+                c = chargen.next()
+                greenlet_row.append(gevent.spawn(c.go))
+                greenlet_row[-1].run()
+                row.append(c)
+
+        failed = row.index("failed")
+        gevent.killall(greenlet_row[failed:])
+        gevent.joinall(greenlet_row[:failed])
+                
+        rval = ''.join([str(elt) for elt in row[:failed]])
+        print "\t\t\t%s" % rval
+        return rval
+        
+
+    @debug.func
+    def run(self,user_query,sleep=None):
+        self.user_query = user_query
+        self.sleep = sleep
+
+        row_index = 0
+        results = []
+        row = True
+        while row != "":
+            if row != True: results.append(row)
+            row = self.__get_row__(row_index)
+            row_index += 1
+        
+        return results
+
+
+
+class BlindTechniqueConcurrentII(Technique):
     def __init__(self,truth = Truth(), *args, **kwargs):
         self.truth = truth
         super(BlindTechniqueConcurrent,self).__init__(*args,**kwargs)
     
     def __character_getter__(self):
         try:
-            while True:
-                current_index = self.chargen.next()
-                self.glets[gevent.getcurrent()] = current_index
-        
+            while not self.__done__():
+                current_index = self.__another_character__()
                 if not self.rows[-1][current_index].go():
-                    #reached the end of the row. kill all greenlets after us
-                    for gl in self.glets:
-                        if self.glets[gl] > current_index:
-                            gl.kill()
-                    
-                    return True
+                    return False
+
         except gevent.GreenletExit:
-            self.rows[-1][current_index].error = True
             return True
 
-    def __character_generator__(self):
-        char_index = 1
+    def __another_character__(self):
         while True:
             c = Character(\
                 row_index           = len(self.rows)-1,\
-                char_index          = char_index,\
+                char_index          = 1,\
                 query               = self.query,\
                 user_query          = self.user_query,\
                 make_request_func   = self.make_request_func,\
@@ -267,23 +350,16 @@ class BlindTechniqueConcurrent(Technique):
             yield len(self.rows[-1]) - 1
             char_index += 1        
 
-
-    def run(self,user_query,sleep=None,concurrency=20):
-        self.user_query = user_query
-        self.sleep = sleep
-    
+    def run(self):
         self.rows = []
         #until we get an empty row
-        while len(self.rows) == 0 or len(self.rows[-1]) > 0:
+        while len(self.rows > 0) and len(rows[-1]) > 0:
             self.rows.append([])
+            #meta row describing which greenlets are working on what characters
+            self.greenlet_row = {}
 
-            #chargen generates the character objects
-            self.chargen = self.__character_generator__()
-
-            self.glets = {}
-            for i in xrange(concurrency):
-                self.glets[(gevent.spawn(self.__character_getter__))] = None
-
-            gevent.joinall(self.glets.keys())
-            self.rows[-1] = ''.join([str(c) for c in self.rows[-1]])
-        return self.rows
+            glets = []
+            for i in xrange(self.concurrency):
+                glets.append(gevent.spawn(self.__character_getter__))
+            gevent.joinall(glets)
+            self.rows[-1] = ''.join(self.rows[-1])

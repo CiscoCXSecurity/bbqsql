@@ -5,7 +5,8 @@ from urlparse import urlparse,parse_qs
 class VulnerableServer:
     def __init__(\
         self,\
-        datas = ['hello','world'],\
+        datas = ['Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris malesuada tincidunt volutpat. Vestibulum feugiat faucibus arcu a consequat.',\
+                 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ultrices felis vehicula augue ornare facilisis. Integer vel ullamcorper orci. '],\
         messages = ["Doh","Hurray, you have discovered the truth, hence this excessivly long message that doesn't realy say much of any meaning or value."],\
         address = "127.0.0.1",\
         port = 1337):
@@ -20,7 +21,7 @@ class VulnerableServer:
         http.HTTPServer((self.address,self.port), self.callback).serve_forever() 
 
     def callback(self,request):
-        ''' http://127.0.0.1:1337/?row_index=0&char_index=0&test_char=97&cmp=1&sleep=1 '''
+        ''' http://127.0.0.1:1337/size?row_index=0&char_index=0&test_char=97&cmp=1&sleep=1 '''
         try:
             #parse params from URI
             params = parse_qs(urlparse(request.uri).query)

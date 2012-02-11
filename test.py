@@ -2,6 +2,7 @@ import bbqsql
 
 import unittest
 import requests
+from requests import async
 from urllib import quote
 from time import time
 
@@ -16,38 +17,38 @@ def my_sender(request):
     else:
         raise 
 
-def pre_hook(request):
-    #hooks for the requests module
+def requests_pre_hook(request):
+    #hooks for the requests module to add some attributes
     request.start_time = time()
     return request
 
-def post_hook(request):
-    #hooks for the requests module
+def requests_post_hook(request):
+    #hooks for the requests module to add some attributes
     request.response.response_time = time() - request.start_time
+    request.response.size = len(request.response.content)
     return request
 
 
-'''class TestBlindRequester(unittest.TestCase):
+class TestBlindRequester(unittest.TestCase):
     def test_exploit(self):
-        url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
-        query = bbqsql.Query("foo=${user_query:unimportant}&row_index=${row_index:1}&char_index=${char_index:0}&test_char=${char_val:0}&cmp=${comparator:>}&sleep=${sleep:.5}",encoder=quote)
-        session = requests.Session()
-        request = session.get(url,return_response=False,hooks = {'pre_request':pre_hook,'post_request':post_hook})
+        url = bbqsql.Query('http://127.0.0.1:8090/boolean?${query}')
+        query = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:0}&foo=${user_query:unimportant}",encoder=quote)
+        request = async.request(url=url,method='GET',return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook})
         requester = bbqsql.Requester(request = request, send_request_function = my_sender)
 
-        mytruth = bbqsql.LooseNumericTruth(comparison_attr = "response_time")
+        mytruth = bbqsql.LooseNumericTruth(comparison_attr = "size")
         for i in xrange(5):
             mytruth.add_true((requester.make_request(query.render())))
         query.set_option('comparator','<')
         for i in xrange(5):
             mytruth.add_false((requester.make_request(query.render())))
 
-        tech = bbqsql.BlindTechnique(make_request_func=requester.make_request,query=query,concurrency=1, truth=mytruth)
-        results = tech.run('SELECT data from example',sleep=.5)
+        tech = bbqsql.BlindTechniqueConcurrentII(make_request_func=requester.make_request,query=query,concurrency=1, truth=mytruth)
+        results = tech.run('SELECT user()',sleep=.5)
 
         self.assertEqual(results,['hello','world'])
 
-
+'''
 class TestBlindHTTPRequester(unittest.TestCase):
     def test_exploit(self):
         url = bbqsql.Query('http://127.0.0.1:1337/?${query}')
@@ -66,7 +67,7 @@ class TestBlindHTTPRequester(unittest.TestCase):
         tech = bbqsql.BlindTechnique(make_request_func=requester.make_request,query=query,concurrency=1, truth = mytruth)
         results = tech.run('unimportant',sleep=.5)
 
-        self.assertEqual(results,['hello','world'])'''
+        self.assertEqual(results,['hello','world'])
 
 
 class TestHTTPBlind(unittest.TestCase):    
@@ -105,6 +106,6 @@ class TestQuery(unittest.TestCase):
         s = q.render()
         should_be = "SELECT new_blah, new_foo from new_asdf"
         self.assertEqual(s,should_be)
-
+'''
 if __name__ == "__main__":
     unittest.main() 
