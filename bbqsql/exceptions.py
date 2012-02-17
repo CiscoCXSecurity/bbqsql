@@ -13,3 +13,11 @@ class TrueFalseRangeOverlap	(Exception):
         self.value = value
     def __repr__(self):
         return "The nature of truth is no longer self-evident: " + self.value
+
+class SendRequestFailed (Exception):
+    '''Throw this exception when a sending a request fails'''
+    def __init__(self, value):
+        self.value = value
+    def __repr__(self):
+        return "Sending the request failed. Dunno why." + self.value
+

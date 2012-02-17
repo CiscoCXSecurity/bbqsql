@@ -15,7 +15,6 @@ class Query(object):
     >>> print q.render()
     hello Ben
     '''
-    @debug.func
     def __init__(self,q_string,options=None,encoder=None):
         '''
         q_string syntax is "SELECT ${blah:default_blah}, ${foo:default_foo} from ${asdf:default_asdf}". 
@@ -32,35 +31,33 @@ class Query(object):
         else:
             self.options = self.parse_query(q_string)
     
-    @debug.func
     def get_option(self,ident):
         '''
         Get the option value whose name is 'ident'
         '''
-        return self.options[ident]
+        return self.options.get(ident,False)
     
-    @debug.func
     def set_option(self,ident,val):
         '''
         Set the value of the option whose name is 'ident' to val
         '''
-        self.options[ident] = val
+        if self.has_option(ident):self.options[ident] = val
+    
+    def has_option(self,option):
+        return option in self.options
 
-    @debug.func
     def get_options(self):
         '''
         Get all of the options (in a dict) for the query
         '''
         return self.options
     
-    @debug.func
     def set_options(self,options):
         '''
         Set the queries option (dict).
         '''
         self.options = options
     
-    @debug.func
     def parse_query(self,q):
         '''
         This is mostly an internal method, but I didn't want to make it private.
@@ -79,7 +76,6 @@ class Query(object):
                 options[ident] = default
         return options
     
-    @debug.func
     def render(self):
         '''
         This compiles the queries options and the original query string into a string.

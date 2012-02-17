@@ -1,10 +1,12 @@
 from .query import Query
 from . import debug
+from .exceptions import *
 
 from copy import copy
 from time import time
 
 import requests
+from requests import async
 
 
 class Requester(object):
@@ -51,7 +53,7 @@ def requests_send(request):
     if request.send():
         return request.response
     else:
-        raise         
+        raise SendRequestFailed("looks like you have a problem")
 
 def requests_pre_hook(request):
     #hooks for the requests module to add some attributes
@@ -74,9 +76,17 @@ class HTTPRequester(Requester):
     @debug.func
     def __init__(self,url,method='GET',send_request_function=requests_send,*args,**kwargs):
         #build a requests.Session object to hold settings
-        session = requests.Session(*args,**kwargs)
+        # session = requests.Session(*args,**kwargs)
         #build a request object (but don't send it)
-        request = session.request(url=url,method=method,return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook})
+        # request = session.request(url=url,method=method,return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook})
+
+        # super(HTTPRequester,self).__init__(request, send_request_function)
+
+
+        #build a requests.Session object to hold settings
+        request = async.request(*args,url=url,method=method,return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook},**kwargs)
+        #build a request object (but don't send it)
+        # request = session.request()
 
         super(HTTPRequester,self).__init__(request, send_request_function)
     
