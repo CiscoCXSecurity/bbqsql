@@ -286,4 +286,8 @@ class BlindTechniqueConcurrent(Technique):
 
             gevent.joinall(self.glets.keys())
             self.rows[-1] = ''.join([str(c) for c in self.rows[-1]])
+
+        try: self.rows.pop()
+        except IndexError: pass
+
         return self.rows

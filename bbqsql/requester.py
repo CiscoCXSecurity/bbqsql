@@ -1,5 +1,6 @@
 from .query import Query
 from . import debug
+from .exceptions import *
 
 from copy import copy
 from time import time
@@ -52,7 +53,7 @@ def requests_send(request):
     if request.send():
         return request.response
     else:
-        raise         
+        raise SendRequestFailed("looks like you have a problem")
 
 def requests_pre_hook(request):
     #hooks for the requests module to add some attributes
