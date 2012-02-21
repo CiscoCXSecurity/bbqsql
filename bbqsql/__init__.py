@@ -30,7 +30,7 @@ __copyright__ = 'Copyright 2012 Ben Toews (mastahyeti)'
 
 from .response import Response
 from .query import Query
-from .technique import Technique,BlindTechnique
+from .technique import *
 from . import settings
 from .requester import *
 from .exceptions import *

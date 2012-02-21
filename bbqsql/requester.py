@@ -53,6 +53,7 @@ def requests_send(request):
     if request.send():
         return request.response
     else:
+	print request.response
         raise SendRequestFailed("looks like you have a problem")
 
 def requests_pre_hook(request):
