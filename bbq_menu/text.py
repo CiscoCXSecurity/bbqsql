@@ -10,10 +10,9 @@ define_version = '1.0'
 main_text = " Select from the menu:\n"
 
 main_menu = ['Time Based SQL Injection',
-             'Boolean Based SQL Injection',
-	     'UNION Based SQL Injection',
-	     'Options',
-	     'Help, Credits, and About']	     
+	     'UNION Based SQL Injection (not implemented)',
+	     'Options (not implemented)',
+	     'Help, Credits, and About (not implemented)']	     
 
 blind_main = ['Setup Attack',
         'Load Config']
@@ -23,6 +22,11 @@ comparison_menu = ['Response Code',
                 'Response Time\n']
 
 method_menu = ['GET', 'POST\n']
+
+cookie_text = """
+Does your request require cookies?:"""
+
+cookie_menu = ['yes', 'no\n']
 
 method_text = """
 Select which method your attack will use:"""
