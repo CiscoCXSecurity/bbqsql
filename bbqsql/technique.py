@@ -240,9 +240,17 @@ class BlindTechnique(Technique):
             for row in self.results:
                 #if we have reached the end of a row without encountering an error, we need to increase the len of the row
                 if len(row) == self.row_len and row[-1] == 'success':
-                    add = self.concurrency / len(filter(lambda row:'working' in row,self.results))
-                    add = [add,1][add == 0]
-                    self.row_len += add
+                    denominator = len(filter(lambda row:'working' in row,self.results))
+
+                    if denominator == 0:
+                        denominator = len(filter(lambda row:'error' not in row,self.results))
+
+                    if denominator == 0:
+                        self.row_len += 1
+                    else:
+                        add = self.concurrency / denominator
+                        add = [add,1][add == 0]
+                        self.row_len += add
 
             for row_index in range(len(self.results)):
                 #if the row isn't finished or hasn't been started yet, we add Character()s to the row
@@ -264,7 +272,6 @@ class BlindTechnique(Technique):
             rows_needed = unused_threads//self.row_len
             rows_needed = [rows_needed,1][rows_needed == 0 and unused_threads > 0]
             [self.row_gen.next() for i in xrange(rows_needed)]
-            print "ar"
             gevent.sleep(.3)
         
         while not self.shutting_down.is_set():
@@ -280,7 +287,6 @@ class BlindTechnique(Technique):
             #if there aren't going to be any more rows in need of deletion we can stop this nonsense
             if self.results and self.results[-1][0] == 'success':
                 break
-            print "ar2"
             gevent.sleep(.3)
 
     def _keep_going(self):
@@ -291,7 +297,6 @@ class BlindTechnique(Technique):
             r = filter(lambda row:'error' not in row or 'working' in row[:row.index('error')],self.results)
             if self.results and not r:
                 self.shutting_down.set()
-            print "kg"
             gevent.sleep(.3)
 
     def _run(self):
