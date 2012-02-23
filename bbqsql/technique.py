@@ -37,20 +37,41 @@ class Technique(object):
 
 class Character():
     def __init__(self,row_index,char_index,queue,row_die):
+        '''
+            :row_index  - what row this character is a part of (for rendering our Query)
+            :char_index - what character in the row is this (for rendering our Query)
+            :queue      - what queue will we push to. this queue will receive tuples in the
+                          form of:
+                             item=(self.row_index,self.char_index,self.char_val,comparator,asr)
+            :row_die    - gevent.event.AsyncResult that gets fired when the row needs to die. the
+                          value passed to this ASR's set() should be the char_index in this row
+                          after which all Character()s need to kill themselves
+        '''
+        #row_die is an AsyncResult. We link our die method to and store the 
+        #event so the die method can know if it should die (based on char_index emmitted by row_die)
+        self.row_die = row_die
+        self.row_die.rawlink(self._die_callback)
+        #run_gl will store the greenlet running the run() method
+        self.run_gl = None
+        self.q = queue
+
         self.row_index = row_index
         self.char_index = char_index
-        self.q = queue
-        self.row_die = row_die
         self.char_val = CHARSET[0]
+
+        #these flags are used in computing the __str__, __repr__, and __eq__
         self.error = False
         self.working = False
         self.done = False
     
     def run(self):
+        #make note of the current greenlet
+        self.run_gl = gevent.getcurrent()
+
         low = 0
         high = CHARSET_LEN
-        self.working = True
-        
+        self.working = True        
+
         #binary search unless we hit an error
         while low < high and not self.error and self.working:
             mid = (low+high)//2
@@ -70,12 +91,20 @@ class Character():
                 self.error = True
                 self.row_die.set(self.char_index)
 
-            if self.row_die.ready() and self.row_die.get() < self.char_index:
-                #print "results[%d][%d] got killed" % (self.row_index,self.char_index)
-                self.error = True
+            gevent.sleep(0)
             
         self.done = True
         self.working = False
+
+        #clear the note regarding the running greenlet
+        self.run_gl = None
+    
+    def _die_callback(self,event):
+        if self.row_die.get() < self.char_index and self.run_gl:
+            self.run_gl.kill(block=False)
+            self.error = True
+            self.done = True
+            self.working = False
     
     def _test(self,comparator):
         asr = AsyncResult()
@@ -107,6 +136,10 @@ class Character():
         # else return char_val
         return self.char_val
     
+    def __hash__(self):
+        # objects that override __eq__ cannot be hashed (cannot be added to a lot of structures like set()....). 
+        return id(self)
+
 
 class BlindTechnique(Technique):
     def __init__(self,truth = Truth(), *args, **kwargs):
@@ -216,7 +249,7 @@ class BlindTechnique(Technique):
                 if 'error' not in self.results[row_index]:
                     self.results[row_index] += [self.char_gens[row_index].next() for i in range(self.row_len - len(self.results[row_index]))]
             self.results_lock.release()
-            gevent.sleep(.2)
+            gevent.sleep(.3)
 
     def _add_rows(self):
         '''
@@ -231,7 +264,8 @@ class BlindTechnique(Technique):
             rows_needed = unused_threads//self.row_len
             rows_needed = [rows_needed,1][rows_needed == 0 and unused_threads > 0]
             [self.row_gen.next() for i in xrange(rows_needed)]
-            gevent.sleep(.2)
+            print "ar"
+            gevent.sleep(.3)
         
         while not self.shutting_down.is_set():
             self.results_lock.acquire()
@@ -242,11 +276,12 @@ class BlindTechnique(Technique):
                 for ri in xrange(len(self.results)-1,end-1,-1):
                     del(self.results[ri])
 
-            self.results_lock.release()
-            gevent.sleep(.2)
+            self.results_lock.release()    
             #if there aren't going to be any more rows in need of deletion we can stop this nonsense
             if self.results and self.results[-1][0] == 'success':
                 break
+            print "ar2"
+            gevent.sleep(.3)
 
     def _keep_going(self):
         '''
@@ -256,8 +291,8 @@ class BlindTechnique(Technique):
             r = filter(lambda row:'error' not in row or 'working' in row[:row.index('error')],self.results)
             if self.results and not r:
                 self.shutting_down.set()
-
-            gevent.sleep(.2)
+            print "kg"
+            gevent.sleep(.3)
 
     def _run(self):
         kg_gl = gevent.spawn(self._keep_going)
