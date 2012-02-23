@@ -72,18 +72,7 @@ class HTTPRequester(Requester):
     object just abstracts away some of the tedious stuff for the base case...'''
 
     def __init__(self,url,method='GET',send_request_function=requests_send,*args,**kwargs):
-        #build a requests.Session object to hold settings
-        # session = requests.Session(*args,**kwargs)
-        #build a request object (but don't send it)
-        # request = session.request(url=url,method=method,return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook})
-
-        # super(HTTPRequester,self).__init__(request, send_request_function)
-
-
-        #build a requests.Session object to hold settings
         request = async.request(*args,url=url,method=method,return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook},**kwargs)
-        #build a request object (but don't send it)
-        # request = session.request()
 
         super(HTTPRequester,self).__init__(request, send_request_function)
     

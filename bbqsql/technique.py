@@ -120,7 +120,7 @@ class Character():
     def __eq__(self,y):
         if y == "error":
             return self.error
-        
+            
         if y == "working":
             return self.working and (not self.error)
         
