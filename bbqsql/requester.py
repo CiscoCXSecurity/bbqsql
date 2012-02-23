@@ -75,4 +75,3 @@ class HTTPRequester(Requester):
         request = async.request(*args,url=url,method=method,return_response=False,hooks = {'pre_request':requests_pre_hook,'post_request':requests_post_hook},**kwargs)
 
         super(HTTPRequester,self).__init__(request, send_request_function)
-    
