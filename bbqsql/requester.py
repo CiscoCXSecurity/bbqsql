@@ -1,5 +1,4 @@
 from .query import Query
-from . import debug
 from .exceptions import *
 
 from copy import copy
@@ -10,12 +9,10 @@ from requests import async
 
 
 class Requester(object):
-    @debug.func
     def __init__( self , request , send_request_function ):
         self.request = request
         self.send_request_function = send_request_function
     
-    @debug.func
     def make_request(self,value=""):
         new_request = copy(self.request)
         #iterate over the __dict__ of the request and compile any elements that are 
@@ -53,7 +50,6 @@ def requests_send(request):
     if request.send():
         return request.response
     else:
-	print request.response
         raise SendRequestFailed("looks like you have a problem")
 
 def requests_pre_hook(request):
@@ -64,7 +60,8 @@ def requests_pre_hook(request):
 def requests_post_hook(request):
     #hooks for the requests module to add some attributes
     request.response.response_time = time() - request.start_time
-    request.response.size = len(request.response.content)
+    if hasattr(request.response.content,'__len__'): request.response.size = len(request.response.content)
+    else: request.response.size = 0
     return request
 
 
@@ -74,7 +71,6 @@ class HTTPRequester(Requester):
     any crazy requests you should use the plain old bbqsql.Requester object. This
     object just abstracts away some of the tedious stuff for the base case...'''
 
-    @debug.func
     def __init__(self,url,method='GET',send_request_function=requests_send,*args,**kwargs):
         #build a requests.Session object to hold settings
         # session = requests.Session(*args,**kwargs)

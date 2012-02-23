@@ -6,7 +6,6 @@ import sys
 
 class PrettyTable:
 	def __init__(self,get_table_callback=None,update=.2,row_filter=None):
-		print "innitting PT"
 		self.update = update
 
 		#function to call to get new tables

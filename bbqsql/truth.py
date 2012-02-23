@@ -1,7 +1,6 @@
 # file: truth.py
 
 from .exceptions import *
-from . import debug
 
 from numpy import mean,std
 from difflib import get_close_matches

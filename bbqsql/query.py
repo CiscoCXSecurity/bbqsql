@@ -1,7 +1,5 @@
 # file: query.py
 
-from . import debug
-
 class Query(object):
     '''
     A query is a string that can be rendered (think prinf). 

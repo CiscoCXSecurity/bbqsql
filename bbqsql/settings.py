@@ -7,7 +7,7 @@ CHARSET_LEN = len(CHARSET)
 #Supress output when possible
 QUIET = False
 
-#Debugging settings.
-DEBUG_FUNCTION_CALL = False
-DEBUG_FUNCTION_RETURN = False
-DEBUG_MARKER = "##> "
+#Do fancy pretty printing of results as they come in?
+PRETTY_PRINT = True
+#How often to refresh the screen while pretty printing (lower looks better but is processor intensive)
+PRETTY_PRINT_FREQUENCY = .1

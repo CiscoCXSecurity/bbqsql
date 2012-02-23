@@ -1,12 +1,12 @@
 #file: technique.py
 
-from . import debug
 from .truth import Truth
 from .settings import *
 from .exceptions import *
 
 import gevent
 from gevent.event import AsyncResult,Event
+from gevent.coros import Semaphore
 from gevent.queue import Queue
 from gevent.pool import Pool
 from copy import copy
@@ -87,29 +87,33 @@ class Character():
             return self.error
         
         if y == "working":
-            return self.working
+            return self.working and (not self.error)
         
         if y == "success":
-            return self.done and not self.error
+            return self.done and (not self.error)
+        
+    def __ne__(self,y):
+        return not self.__eq__(y)
 
     def __str__(self):
-        if (not self.working) and (not self.error): return self.char_val
-        if self.error: return ""
-        if self.working: return self.char_val
+        # if error or not started yet return ''
+        if self.error or (not self.working and not self.done): return ""
+        # else return char_val
+        return self.char_val
 
     def __repr__(self):
-        if (not self.working) and (not self.done): return "not_started"
-        if (not self.error) and self.done: return self.char_val
-        if self.error: return ""
-        if self.working: return self.char_val
+        # if error or not started yet return ''
+        if self.error or (not self.working and not self.done): return ""
+        # else return char_val
+        return self.char_val
     
 
-class BlindTechniqueConcurrent(Technique):
+class BlindTechnique(Technique):
     def __init__(self,truth = Truth(), *args, **kwargs):
         self.truth = truth
         self.rungl = None
 
-        super(BlindTechniqueConcurrent,self).__init__(*args,**kwargs)
+        super(BlindTechnique,self).__init__(*args,**kwargs)
 
     def _request_maker(self):
         '''
@@ -130,7 +134,17 @@ class BlindTechniqueConcurrent(Technique):
             query.set_option('comparator',comparator)
             query_string = query.render()
 
-            char_asyncresult.set(self.truth.test(self.make_request_func(query_string)))
+            count = 0
+            response = None
+            while response == None:
+                try:
+                    response = self.make_request_func(query_string)
+                except SendRequestFailed:
+                    response = None
+                    gevent.sleep(5)
+                    if count == 5: raise SendRequestFailed('cant request')
+                count += 1
+            char_asyncresult.set(self.truth.test(response))
 
     def _reset(self):
         '''
@@ -150,6 +164,10 @@ class BlindTechniqueConcurrent(Technique):
         self.character_pool = Pool(self.concurrency)
         #"threads" that make requests
         self.request_makers = [gevent.spawn(self._request_maker) for i in range(self.concurrency)]
+        #fire this event when shutting down
+        self.shutting_down = Event()
+        #use this as a lock to know when not to mess with self.results        
+        self.results_lock = Semaphore(1)
 
     def _row_generator(self):
         '''
@@ -161,17 +179,6 @@ class BlindTechniqueConcurrent(Technique):
             self.results.append([])
             yield True
             row_index += 1
-
-    def _add_rows(self):
-        '''
-        look at how many gevent "threads" are being used and add more rows to correct this
-        '''
-        if self._more_rows():
-            '''unused_threads = self.concurrency - sum([row.count('working') for row in self.results])
-            rows_needed = unused_threads//self.row_len
-            rows_needed = [rows_needed,1][rows_needed == 0 and unused_threads > 0]
-            [self.row_gen.next() for i in xrange(rows_needed)]'''
-            self.row_gen.next()
 
     def _character_generator(self,row_index):
         '''
@@ -195,47 +202,75 @@ class BlindTechniqueConcurrent(Technique):
         if a row is full of "success", but we havent reached the end yet (the last elt isnt "error")
         then we need to increase the row_len.
         '''
-        for row in self.results:
-            if row.count('success') == len(row) and len(row) == self.row_len:
-                self.row_len += 1
+        while not self.shutting_down.is_set():
+            self.results_lock.acquire()
+            for row in self.results:
+                #if we have reached the end of a row without encountering an error, we need to increase the len of the row
+                if len(row) == self.row_len and row[-1] == 'success':
+                    add = self.concurrency / len(filter(lambda row:'working' in row,self.results))
+                    add = [add,1][add == 0]
+                    self.row_len += add
+
+            for row_index in range(len(self.results)):
+                #if the row isn't finished or hasn't been started yet, we add Character()s to the row
+                if 'error' not in self.results[row_index]:
+                    self.results[row_index] += [self.char_gens[row_index].next() for i in range(self.row_len - len(self.results[row_index]))]
+            self.results_lock.release()
+            gevent.sleep(.2)
+
+    def _add_rows(self):
+        '''
+        look at how many gevent "threads" are being used and add more rows to correct this
+        '''
+        while not self.shutting_down.is_set():
+            # add rows until we realize that we are at the end of rows
+            if len(self.results) and filter(lambda row: len(row) and row[0] == 'error',self.results):
+                break
+            
+            unused_threads = self.concurrency - reduce(lambda x,row: x + row.count('working'),self.results,0)
+            rows_needed = unused_threads//self.row_len
+            rows_needed = [rows_needed,1][rows_needed == 0 and unused_threads > 0]
+            [self.row_gen.next() for i in xrange(rows_needed)]
+            gevent.sleep(.2)
         
-        for row_index in range(len(self.results)):
-            row = self.results[row_index]
-            #if the row isn't finished or hasn't been started yet, we add Character()s to the row
-            if len(row) == 0 or row[-1] != "error":
-                self.results[row_index] += [self.char_gens[row_index].next() for i in range(self.row_len - len(row))]
+        while not self.shutting_down.is_set():
+            self.results_lock.acquire()
+            # delete any rows that shouldn't have been added in the first place
+            errored = filter(lambda ri: len(self.results[ri]) and self.results[ri][0] == 'error',range(len(self.results)))
+            if errored:
+                end = min(errored)
+                for ri in xrange(len(self.results)-1,end-1,-1):
+                    del(self.results[ri])
+
+            self.results_lock.release()
+            gevent.sleep(.2)
+            #if there aren't going to be any more rows in need of deletion we can stop this nonsense
+            if self.results and self.results[-1][0] == 'success':
+                break
 
     def _keep_going(self):
         '''
         Look at the results gathered so far and determine if we should keep going. we want to keep going until we have an empty row
         '''
-        if len(self.results) == 0: 
-            return True
-        for row in self.results:
-            if row.count("error") == 0:
-                return True
-            if len(row) > 0 and row.count("error") == len(row): 
-                return False
-        return True
+        while not self.shutting_down.is_set():
+            r = filter(lambda row:'error' not in row or 'working' in row[:row.index('error')],self.results)
+            if self.results and not r:
+                self.shutting_down.set()
 
-    def _more_rows(self):
-        '''decide if we need to create more rows. you might want to override this...'''
-        if len(self.results) == 0: return True
-        rval = (not filter(lambda row:row.count('error') == len(row) and len(row) > 0,self.results))
-        return rval
+            gevent.sleep(.2)
 
     def _run(self):
-        while self._keep_going():     
-            #print self.q.qsize()
-            # adjust self.row_len and the lengths of rows if necessary
-            self._adjust_row_lengths()
-            # add more rows if we need to
-            self._add_rows()
-            # sleeping for 0 is the same as yielding to other coroutines without sleeping
-            gevent.sleep(0)
+        kg_gl = gevent.spawn(self._keep_going)
+        ar_gl = gevent.spawn(self._add_rows)
+        arl_gl = gevent.spawn(self._adjust_row_lengths)
+
+        kg_gl.join()
+        ar_gl.join()
+        arl_gl.join()
 
         self.character_pool.join()
         gevent.killall(self.request_makers)
+        gevent.joinall(self.request_makers)
 
     def run(self,user_query,concurrency=20,row_len=2,sleep=0):
         '''
@@ -257,7 +292,8 @@ class BlindTechniqueConcurrent(Technique):
         self._reset()
 
         self.rungl = gevent.spawn(self._run)
+
         return self.rungl
 
     def get_results(self):
-        return ["".join([str(x) for x in row]) for row in self.results]
+        return filter(lambda row: row != '',[''.join([str(x) for x in row]) for row in self.results])
