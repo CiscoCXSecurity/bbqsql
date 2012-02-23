@@ -213,7 +213,10 @@ class BlindTechnique(Technique):
                     gevent.sleep(.01 * 2 ** count)                    
                     if count == 10: raise SendRequestFailed('cant request')
                 count += 1
-            char_asyncresult.set(self.truth.test(response))
+
+            t = self.truth.test(response)
+
+            char_asyncresult.set(t)
 
     def _row_generator(self):
         '''
@@ -363,8 +366,5 @@ class BlindTechnique(Technique):
         if chars: rc = float(self.request_count) / chars
         else: rc = 0.0
         status += "req/char: %f\t" % rc
-
-        sd = self.truth.get_standard_dev('true')
-        if sd is not None: status += "truth standard dev: %f\t" % sd
 
         return status

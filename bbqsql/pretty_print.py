@@ -50,13 +50,16 @@ class PrettyTable:
 
 			#figure out how many new lines are needed to be printed before the table data
 			tlen = len(table)
-			new_lines_needed = self.sizey - tlen - reduce(lambda x,row: x + len(row) // self.sizex,table,0) - (not not self.get_status_callback)
+			new_lines_needed = self.sizey - tlen - reduce(lambda x,row: x + len(row) // self.sizex,table,0) - 3
 
 			#start building out table,
-			str_table = "\n".join(table)
+			str_table = "\n"
+			str_table += "\n".join(table)
 			str_table += "\n"*new_lines_needed
 
 			if self.get_status_callback:
 				str_table += "\n" + str(self.get_status_callback())
 			
-			print str_table
+			str_table += "\n"
+			
+			sys.stdout.write(str_table)

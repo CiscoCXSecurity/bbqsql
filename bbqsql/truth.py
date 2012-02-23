@@ -101,8 +101,6 @@ class LooseNumericTruth(Truth):
         self.cases[case]['middle'] = m
         self.cases[case]['high'] = m + s
 
-        #print "case: %s\t %d,%d,%d" % (case,self.cases[case]['low'],self.cases[case]['middle'],self.cases[case]['high'])
-
         self.__check_for_overlaps__()
 
     def __check_for_overlaps__(self):

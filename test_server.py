@@ -40,7 +40,6 @@ def parse_response(env, start_response):
         test_char = int(params['character_value'][0])
         comparator = comparators.index(params['comparator'][0]) - 1
         sleep_int = float(params['sleep'].pop(0))
-        print "sleep %f" % sleep_int
 
         # Determine which character position we are at during the injection
         current_character = datas[row_index][char_index]
@@ -65,7 +64,7 @@ def parse_response(env, start_response):
 
 def time_based_blind(test_char, current_character, comparator, sleep_int, start_response,truth):
     # Snage the query string and parse it into a dict
-    sleep_time = float(sleep_int) * truth
+    sleep_time = sleep_int * truth
     time.sleep(sleep_time)
     start_response('200 OK', [('Content-Type', 'text/plain')])
     return ['Hello!\r\n']
