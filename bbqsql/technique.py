@@ -89,7 +89,7 @@ class Character():
                 #if there isn't a value for the character we are working on, that means we went past the end of the row.
                 #we set error and kill characters after us in the row.
                 self.error = True
-                self.row_die.set(self.char_index)
+                self.row_die.set((self.char_index,AsyncResult()))
 
             gevent.sleep(0)
             
@@ -100,11 +100,17 @@ class Character():
         self.run_gl = None
     
     def _die_callback(self,event):
-        if self.row_die.get() < self.char_index and self.run_gl:
+        #we do the next_event because the first event might be first for the last character. 
+        #this way we can fire the die event multiple times if necessary
+        die_index,next_event = self.row_die.get()
+        if die_index  < self.char_index and self.run_gl:
             self.run_gl.kill(block=False)
             self.error = True
             self.done = True
             self.working = False
+        else:
+            self.row_die = next_event
+            self.row_die.rawlink(self._die_callback)
     
     def _test(self,comparator):
         asr = AsyncResult()
