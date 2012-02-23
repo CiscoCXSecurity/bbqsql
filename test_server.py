@@ -28,8 +28,8 @@ def parse_response(env, start_response):
     '''Parse out all necessary information and determine if the query resulted in a match'''
 
     #add in some random delay
-    delay = random()
-    time.sleep(delay/10)
+    #delay = random()
+    #time.sleep(delay/10)
 
     try:
         params =  parse_qs(env['QUERY_STRING'])
