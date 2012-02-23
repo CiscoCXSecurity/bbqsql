@@ -3,8 +3,11 @@ from time import time
 from urllib import quote
 
 #SIZE BASED EXAMPLE
-url = bbqsql.Query('http://127.0.0.1:8090/boolean?${query}')
-bh = bbqsql.BlindHTTP(url=url)
+url 	= bbqsql.Query('http://127.0.0.1:8090/boolean?${query}')
+query 	= bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:0}&foo=${user_query:unimportant}",encoder=quote)
+
+bh 		= bbqsql.SizeBlindHTTP(url=url,query=query)
+
 start = time()
 results = bh.run(concurrency=100)
 stop = time()
