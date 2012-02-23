@@ -180,8 +180,8 @@ class BlindTechnique(Technique):
                     response = self.make_request_func(query_string)
                 except SendRequestFailed:
                     response = None
-                    gevent.sleep(5)
-                    if count == 5: raise SendRequestFailed('cant request')
+                    gevent.sleep(.01 * 2 ** count)                    
+                    if count == 10: raise SendRequestFailed('cant request')
                 count += 1
             char_asyncresult.set(self.truth.test(response))
 
