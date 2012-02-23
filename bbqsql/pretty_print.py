@@ -5,11 +5,14 @@ from subprocess import Popen,PIPE,STDOUT
 import sys
 
 class PrettyTable:
-	def __init__(self,get_table_callback=None,update=.2,row_filter=None):
+	def __init__(self,get_table_callback=None,get_status_callback=None,update=.2,row_filter=None):
 		self.update = update
 
 		#function to call to get new tables
 		self.get_table_callback = get_table_callback
+
+		#function to call to get technique status
+		self.get_status_callback = get_status_callback
 
 		# find the terminal size
 		self._find_screen_size()
@@ -47,10 +50,13 @@ class PrettyTable:
 
 			#figure out how many new lines are needed to be printed before the table data
 			tlen = len(table)
-			new_lines_needed = self.sizey - tlen -reduce(lambda x,row: x + len(row) // self.sizex,table,0)
+			new_lines_needed = self.sizey - tlen - reduce(lambda x,row: x + len(row) // self.sizex,table,0) - (not not self.get_status_callback)
 
 			#start building out table,
 			str_table = "\n".join(table)
 			str_table += "\n"*new_lines_needed
+
+			if self.get_status_callback:
+				str_table += "\n" + str(self.get_status_callback())
 			
 			print str_table

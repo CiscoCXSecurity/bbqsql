@@ -10,4 +10,4 @@ QUIET = False
 #Do fancy pretty printing of results as they come in?
 PRETTY_PRINT = True
 #How often to refresh the screen while pretty printing (lower looks better but is processor intensive)
-PRETTY_PRINT_FREQUENCY = .2
+PRETTY_PRINT_FREQUENCY = .5

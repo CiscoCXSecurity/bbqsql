@@ -28,8 +28,8 @@ def parse_response(env, start_response):
     '''Parse out all necessary information and determine if the query resulted in a match'''
 
     #add in some random delay
-    #delay = random()
-    #time.sleep(delay/10)
+    delay = random()
+    time.sleep(delay/10)
 
     try:
         params =  parse_qs(env['QUERY_STRING'])
@@ -39,7 +39,8 @@ def parse_response(env, start_response):
         char_index = int(params['character_index'][0]) - 1
         test_char = int(params['character_value'][0])
         comparator = comparators.index(params['comparator'][0]) - 1
-        sleep_int = int(params['sleep'].pop(0))
+        sleep_int = float(params['sleep'].pop(0))
+        print "sleep %f" % sleep_int
 
         # Determine which character position we are at during the injection
         current_character = datas[row_index][char_index]

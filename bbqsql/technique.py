@@ -154,37 +154,6 @@ class BlindTechnique(Technique):
 
         super(BlindTechnique,self).__init__(*args,**kwargs)
 
-    def _request_maker(self):
-        '''
-        this runs in a gevent "thread". It is a worker
-        '''
-        #keep going until we shut down the technique
-        while True:
-            #pull the info needed to make a request from the queue
-            row_index,char_index,char_val,comparator,char_asyncresult = self.q.get()
-
-            #build out our query object
-            query = copy(self.query)
-            query.set_option('user_query',self.user_query)
-            query.set_option('row_index',str(row_index))
-            query.set_option('char_index',str(char_index))
-            query.set_option('char_val',str(ord(char_val)))
-            query.set_option('sleep',str(self.sleep))
-            query.set_option('comparator',comparator)
-            query_string = query.render()
-
-            count = 0
-            response = None
-            while response == None:
-                try:
-                    response = self.make_request_func(query_string)
-                except SendRequestFailed:
-                    response = None
-                    gevent.sleep(.01 * 2 ** count)                    
-                    if count == 10: raise SendRequestFailed('cant request')
-                count += 1
-            char_asyncresult.set(self.truth.test(response))
-
     def _reset(self):
         '''
         reset all the variables used for keeping track of internal state
@@ -207,6 +176,44 @@ class BlindTechnique(Technique):
         self.shutting_down = Event()
         #use this as a lock to know when not to mess with self.results        
         self.results_lock = Semaphore(1)
+        #request_count is the number of requests made on the current run
+        self.request_count = 0
+        #failure_count is the number of requests made on the current run
+        self.failure_count = 0
+
+    def _request_maker(self):
+        '''
+        this runs in a gevent "thread". It is a worker
+        '''
+        #keep going until we shut down the technique
+        while True:
+            #pull the info needed to make a request from the queue
+            row_index,char_index,char_val,comparator,char_asyncresult = self.q.get()
+
+            #build out our query object
+            query = copy(self.query)
+            query.set_option('user_query',self.user_query)
+            query.set_option('row_index',str(row_index))
+            query.set_option('char_index',str(char_index))
+            query.set_option('char_val',str(ord(char_val)))
+            query.set_option('sleep',str(self.sleep))
+            query.set_option('comparator',comparator)
+            query_string = query.render()
+
+            self.request_count += 1
+
+            count = 0
+            response = None
+            while response == None:
+                try:
+                    response = self.make_request_func(query_string)
+                except SendRequestFailed:
+                    self.failure_count += 1
+                    response = None
+                    gevent.sleep(.01 * 2 ** count)                    
+                    if count == 10: raise SendRequestFailed('cant request')
+                count += 1
+            char_asyncresult.set(self.truth.test(response))
 
     def _row_generator(self):
         '''
@@ -343,3 +350,21 @@ class BlindTechnique(Technique):
 
     def get_results(self):
         return filter(lambda row: row != '',[''.join([str(x) for x in row]) for row in self.results])
+
+    def get_status(self):
+        status = ""
+        status += "requests: %d\t" % self.request_count
+        status += "failures: %d\t" % self.failure_count
+        status += "rows: %d\t" % reduce(lambda x,row: ('success' in row)+x,self.results,0)
+        
+        chars = reduce(lambda x,row: row.count('success') + x,self.results,0)
+        status += "chars: %d\t" % chars
+
+        if chars: rc = float(self.request_count) / chars
+        else: rc = 0.0
+        status += "req/char: %f\t" % rc
+
+        sd = self.truth.get_standard_dev('true')
+        if sd is not None: status += "truth standard dev: %f\t" % sd
+
+        return status

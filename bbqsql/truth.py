@@ -95,6 +95,7 @@ class LooseNumericTruth(Truth):
 
         m = mean(self.cases[case]['values'])
         s = std(self.cases[case]['values']) * self.acceptable_deviation
+        self.cases[case]['stddev'] = s
 
         self.cases[case]['low'] = m - s
         self.cases[case]['middle'] = m
@@ -116,6 +117,11 @@ class LooseNumericTruth(Truth):
                             raise TrueFalseRangeOverlap("truth and falsity overlap")
                         elif self.cases[outer]['middle'] <= self.cases[inner]['middle'] and self.cases[outer]['high'] > self.cases[inner]['low']:
                             raise TrueFalseRangeOverlap("truth and falsity overlap")
+
+    def get_standard_dev(self,case):
+        if 'stddev' in self.cases[case]:
+            return self.cases[case]['stddev']
+        else: return None
 
     def test(self,obj):
         '''test a value'''
