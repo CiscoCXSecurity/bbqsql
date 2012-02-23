@@ -101,8 +101,26 @@ try:
              query = raw_input(bbqcore.setprompt(["1"], " Enter the query string"))
              print '\n  99) Return back to the main menu.\n'
              break
-         print '\n' + url, query, dictionaries.comparison(str(http_method)), http_method_parameters, cookie_parameters, attr
-         bbqcore.ExitBBQ()
+
+         while 1:
+             bbqcore.show_banner(define_version,'1')
+             print """
+             This is what you provided BBQ sql for attacking. If you provided everytihng we need then we are good to go.
+
+
+             \n"""
+             print 'URL: ' + url
+             print 'METHOD: ' +  dictionaries.comparison(str(http_method))
+             if http_method_parameters != "":
+                 print 'Parameters: ' +  http_method_parameters
+             if cookie_parameters != "":
+                 print 'Cookies: ' +  cookie_parameters
+             
+             print "Injection String: " + query
+             print 'Comparision Attribute: ' + attr
+
+          #print '\n' + url, query, dictionaries.comparison(str(http_method)), http_method_parameters, cookie_parameters, attr
+             bbqcore.ExitBBQ()
 
      # If the user has chosen '2', request configuration, validate, and execute attack
      if blind_menu_choice == '2': #'SQL TIME MAN
