@@ -1,6 +1,4 @@
 #!/usr/bin/python
-#from src.core import setcore
-#from src.core.menu import text
 import os,subprocess,sys
 import bbqcore
 from bbqcore import bcolors
@@ -14,7 +12,7 @@ define_version = 1.0
 try:
  
      # intitial user menu
-    if not os.path.isfile("src/agreement"):
+    if not os.path.isfile("agreement"):
         print """Copyright 2012, bbqsql injection tool
 All rights reserved.
 
@@ -43,7 +41,7 @@ is due (which means giving the authors the credit they deserve for writing it).\
         print bcolors.RED + """ The bbqsql injection toolkit is designed for legal use only """
         choice = raw_input("\nDo you agree to the terms of service [y/n]: ")
         if choice == "yes" or choice == "y":
-            filewrite = file("src/agreement", "w")
+            filewrite = file("agreement", "w")
             filewrite.write("user accepted")
             filewrite.close()
             print bcolors.ENDC
