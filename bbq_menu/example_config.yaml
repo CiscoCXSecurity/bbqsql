@@ -1,0 +1,5 @@
+url : 'http://127.0.0.1:8090/boolean?${query}'
+query : 'row_index=${row_index:0}&character_index=${char_index:1}&character_value=${char_val:104}&comparator=${comparator:=}&sleep=${sleep:1}'
+parameter : 'vuln_param'
+method : 'GET'
+comparision_attr : 'repsonse_time'
