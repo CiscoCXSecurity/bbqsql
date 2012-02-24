@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#########################################
 #
 ###############################################
 import subprocess
@@ -13,6 +12,7 @@ import text
 import yaml
 import dictionaries
 import traceback
+from lepl.apps.rfc3696 import HttpUrl
 ###############################################
 # Define path and set it to the bbqsql root dir
 ###############################################
@@ -36,7 +36,7 @@ try:
     ###################################################
 
      # This is the menu that displays blind sql injection options
-     main_main_menu = bbqcore.CreateMenu(text.main_text, text.blind_main)
+     main_main_menu = bbqcore.CreateMenu(text.blind_text, text.blind_main)
 
      # Special case of list item 99
      print '\n  99) Return back to the main menu.\n'
@@ -52,8 +52,16 @@ try:
          break
 
      # If the user has chosen '1', then walk the user though attack configuration
-     if blind_menu_choice == '1': #'SQL TIME MAN
+     if blind_menu_choice == '1':
          url = raw_input(bbqcore.setprompt(["1"], " Enter the URL "))
+         # Check if this is a vliad URL, and if it isn't quit
+         valid_http_url = HttpUrl()
+         if valid_http_url(url):
+             pass
+         else:
+             print "not a valid url...quitting\n"
+             time.sleep(3)
+             break
 
          # Show the user which types of comparison methods are available for blind sql injection
          while 1:
@@ -62,64 +70,86 @@ try:
              http_method_menu = bbqcore.CreateMenu(text.method_text, text.method_menu)
              print '\n  99) Return back to the main menu.\n'
              http_method = (raw_input(bbqcore.setprompt("1", "")))
-             if blind_menu_choice == '99':
+             if http_method == '99':
                  break
-             if http_method == '1':
-                 http_method_parameters = ""
+             # Make sure the user slected the correct option, otherwise quit
+             if range(1,3).count(int(http_method)):
+                 if http_method == '1':
+                     http_method_parameters = ""
+                     pass
+                 # If the user wants to do a POST, collect post data
+                 if http_method == '2':
+                     http_method_parameters = raw_input(bbqcore.setprompt(["1"], " Paste the Post parameters "))
+                     pass
+             else:
+                 print 'you entered an invalid choice...quitting\n'
+                 time.sleep(3)
                  break
-             if http_method == '2':
-                 http_method_parameters = raw_input(bbqcore.setprompt(["1"], " Paste the Post parameters "))
-                 break
-         while 1:
-             if blind_menu_choice == '99':
-                 break
+
+             # Does the user need cookies?  yes or no otehrwise quit
              cookie_menu = bbqcore.CreateMenu(text.cookie_text, text.cookie_menu)
              print '\n  99) Return back to the main menu.\n'
              cookies_needed = (raw_input(bbqcore.setprompt("1", "")))
              if cookies_needed == '99':
                  break
-             if cookies_needed == '2':
-                 cookie_parameters = ""
-                 break
-             if cookies_needed == '1':
-                 cookie_parameters = raw_input(bbqcore.setprompt(["1"], " Paste the Cookies here"))
+             if range(1,3).count(int(http_method)):
+                 if cookies_needed == '2':
+                     cookie_parameters = ""
+                     pass
+
+                 if cookies_needed == '1':
+                     cookie_parameters = raw_input(bbqcore.setprompt(["1"], " Paste the Cookies here"))
+                     pass
+             else:
+                 print 'you entered an invalid choice...quitting\n'
+                 time.sleep(3)
                  break
 
-         while 1:
-             if blind_menu_choice == '99':
-                 break
+             # What type of attribute are we gonna use?  
              attr_main_menu = bbqcore.CreateMenu(text.comparison_text, text.comparison_menu)
              print '\n  99) Return back to the main menu.\n'
              attr = (raw_input(bbqcore.setprompt("1", "")))
-             break
-         # Describe to the user how to construct a query, give examples, then let them type it up
-         while 1:
-             if blind_menu_choice == '99':
+             if attr == '99':
                  break
-#             query_main_menu = bbqcore.CreateMenu(text.query_text, text.query_menu)
-             print text.query_text
-             query = raw_input(bbqcore.setprompt(["1"], " Enter the query string"))
-             print '\n  99) Return back to the main menu.\n'
-             break
+             if range(1,4).count(int(attr)):
+                 pass
+             else:
+                 print 'you entered an invalid number\n'
+                 time.sleep(3)
+                 break
 
-         while 1:
+                    # Describe to the user how to construct a query, give examples, then let them type it up
+#                     while 1:
+#                         if blind_menu_choice == '99':
+#                             break
+             query_main_menu = bbqcore.CreateMenu(text.query_text, text.query_menu)
+             print '\n  99) Return back to the main menu.\n'
+             query = raw_input(bbqcore.setprompt(["1"], " Enter the query string"))
+             if query == '99':
+                 break
+
              bbqcore.show_banner(define_version,'1')
              print """
              This is what you provided BBQ sql for attacking. If you provided everytihng we need then we are good to go.
 
 
              \n"""
-             print 'URL: ' + url
-             print 'METHOD: ' +  dictionaries.comparison(str(http_method))
+             print '{0:10} ==> {1:10s}'.format('URL', url)
+             print '{0:10} ==> {1:10s}'.format('Method', dictionaries.http_method(str(http_method)))
              if http_method_parameters != "":
-                 print 'Parameters: ' +  http_method_parameters
+                 print '{0:10} ==> {1:10s}'.format('Parameters', http_method_parameters)
              if cookie_parameters != "":
-                 print 'Cookies: ' +  cookie_parameters
+                 print '{0:10} ==> {1:10s}'.format('Parameters', cookie_parameters)
              
-             print "Injection String: " + query
-             print 'Comparision Attribute: ' + attr
+             print '{0:10} ==> {1:10s}'.format('Injection', query)
+             print '{0:10} ==> {1:10s}'.format('Comparision', dictionaries.comparison(str(attr)))
+             print """
+
+
+             \n"""
 
           #print '\n' + url, query, dictionaries.comparison(str(http_method)), http_method_parameters, cookie_parameters, attr
+             final_check = raw_input(bbqcore.setprompt(["1"], " DOes this look correct?"))
              bbqcore.ExitBBQ()
 
      # If the user has chosen '2', request configuration, validate, and execute attack

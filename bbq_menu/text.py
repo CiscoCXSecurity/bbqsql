@@ -9,6 +9,33 @@ define_version = '1.0'
 
 main_text = " Select from the menu:\n"
 
+blind_text = """Blind SQL Injection is used when a web application is vulnerable to an SQL injection but the results 
+of the injection are not visible to the attacker. The page with the vulnerability may not be one that displays data 
+but will display differently depending on the results of a logical statement injected into the legitimate SQL statement 
+called for that page.
+
+If this is the first time using this tool, the menu system will help generate a config you can use for your attack
+
+when setting up the attack make sure you specifiy the following macro where you want the injection """ + bcolors.BOLD + """${injection}""" + bcolors.ENDC + """ 
+
+This tells bbqsql where to insrt your injection string.  You can put the ${injection} tag wherever you identified 
+the vulnerality (exp. post parameter, cookie value, get parameter)
+
+""" + bcolors.BOLD + """GET Paramter Example""" + bcolors.ENDC + """
+
+If you identified the parameter 'guid' is vulnerable during a GET request, your URL may look like the following:
+
+http://www.my-bad-site.com/?foo=bar&guid=${injection}
+
+""" + bcolors.BOLD + """Cookie Value Example""" + bcolors.ENDC + """
+
+If you identified the parameter 'cart' is vulnerable during a GET request, your cookie string may look like the following:
+
+bob=foo; jsessionid=someidhere; cart=${injection}
+
+""" + bcolors.BOLD + """You must specifcy the ${injection} tag or the tool will not run!""" + bcolors.ENDC + """
+\n"""
+
 main_menu = ['Time Based SQL Injection',
 	     'UNION Based SQL Injection (not implemented)',
 	     'Options (not implemented)',
@@ -37,6 +64,7 @@ Below is a list of blind techniques you can use to exfiltrate data
 Select one of the below:
 """
 
+query_menu = ""
 
 query_text = ("""
 The query input is where you will construct your query used to exfiltrate informaiton from the database.  The assumption is
