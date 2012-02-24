@@ -30,7 +30,8 @@ COMPARISON_ATTRS = {\
         "content"       :{'truth':truth.LooseTextTruth,'std':.6},\
         "text"          :{'truth':truth.LooseTextTruth,'std':.6},\
         "size"          :{'truth':truth.LooseNumericTruth,'std':1},\
-        "response_time" :{'truth':truth.LooseNumericTruth,'std':4}\
+        "response_time" :{'truth':truth.LooseNumericTruth,'std':4},\
+        "status_code"   :{'truth':truth.Truth,'std':1}\
 }
 
 # These are the available comparison operators as well as their oposites.
