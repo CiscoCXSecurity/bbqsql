@@ -1,2 +1,4 @@
 *.pyc
 demo_remote.py
+*.tmp
+*.bak

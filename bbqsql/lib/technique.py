@@ -1,7 +1,7 @@
 #file: technique.py
 
 from .truth import Truth
-from .settings import *
+from ..settings import *
 from .exceptions import *
 
 import gevent
