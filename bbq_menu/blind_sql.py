@@ -129,24 +129,33 @@ try:
                  break
 
              bbqcore.show_banner(define_version,'1')
+             run_data = {}
              print """
              This is what you provided BBQ sql for attacking. If you provided everytihng we need then we are good to go.
 
 
+
              \n"""
              print '{0:10} ==> {1:10s}'.format('URL', url)
+             run_data['url'] = url
              print '{0:10} ==> {1:10s}'.format('Method', dictionaries.http_method(str(http_method)))
+             run_data['method'] = dictionaries.http_method(str(http_method))
              if http_method_parameters != "":
                  print '{0:10} ==> {1:10s}'.format('Parameters', http_method_parameters)
+                 run_data['post_parameters'] = http_method_parameters
              if cookie_parameters != "":
                  print '{0:10} ==> {1:10s}'.format('Parameters', cookie_parameters)
+                 run_data['cookies'] = cookie_parameters
              
              print '{0:10} ==> {1:10s}'.format('Injection', query)
+             run_data['injection'] = query
              print '{0:10} ==> {1:10s}'.format('Comparision', dictionaries.comparison(str(attr)))
+             run_data['comparision'] = dictionaries.comparison(str(attr))
              print """
 
 
              \n"""
+             print run_data
 
           #print '\n' + url, query, dictionaries.comparison(str(http_method)), http_method_parameters, cookie_parameters, attr
              final_check = raw_input(bbqcore.setprompt(["1"], " DOes this look correct?"))
