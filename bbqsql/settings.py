@@ -14,8 +14,14 @@ QUIET = False
 #Do fancy pretty printing of results as they come in?
 PRETTY_PRINT = True
 #How often to refresh the screen while pretty printing (lower looks better but is processor intensive)
-PRETTY_PRINT_FREQUENCY = .5
+PRETTY_PRINT_FREQUENCY = .2
 
+COLORS = {\
+    'success':'\033[0m',\
+    'working':'\033[37m',\
+    'error':'\033[101m',\
+    'unknown':'\033[101m',\
+    'endc':'\033[0m'}
 
 #######################
 # Blind Technique Stuff
@@ -25,7 +31,7 @@ PRETTY_PRINT_FREQUENCY = .5
 TRUTH_BASE_REQUESTS = 5
 
 # this specifies the available comparison attributes, what Truth class to use for the and what standard deviation is acceptable in that Truth class
-import truth
+from lib import *
 COMPARISON_ATTRS = {\
         "content"       :{'truth':truth.LooseTextTruth,'std':.6},\
         "text"          :{'truth':truth.LooseTextTruth,'std':.6},\

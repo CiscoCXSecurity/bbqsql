@@ -28,11 +28,6 @@ __author__ = 'Ben Toews (mastahyeti)'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2012 Ben Toews (mastahyeti)'
 
-from .response import Response
-from .query import Query
-from .technique import *
-from . import settings
-from .requester import *
-from .exceptions import *
-from .truth import *
-from .exploits import *
+
+from lib import *
+from menu import * 
