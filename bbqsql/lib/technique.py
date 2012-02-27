@@ -365,7 +365,23 @@ class BlindTechnique(Technique):
     def get_results(self,color=False):
         if not color:
             return filter(lambda row: row != '',[''.join([str(x) for x in row]) for row in self.results])
-        return filter(lambda row: row != '',[''.join([COLORS[x.get_status()] + str(x) + COLORS['endc'] for x in row]) for row in self.results])        
+        
+        rval = []
+        running_status = "unknown"
+
+        for row in self.results:
+            row_string = ""
+            for c in row:
+                cstatus = c.get_status()
+                if cstatus != running_status:
+                    row_string += COLORS[cstatus]
+                    running_status = cstatus
+                row_string += str(c)
+            rval.append(row_string + COLORS['endc'])
+        return rval
+            
+
+        #return filter(lambda row: row != '',[''.join([COLORS[x.get_status()] + str(x) + COLORS['endc'] for x in row]) for row in self.results])        
 
 
     def get_status(self):

@@ -48,8 +48,8 @@ class PrettyTable:
 
 		i = 0
 		while True:
-			gevent.sleep(self.update)
 			table = self.get_table_callback(color=True)
+			#table = self.get_table_callback()
 
 			table = filter(self.row_filter,table)
 
@@ -68,3 +68,6 @@ class PrettyTable:
 			str_table += "\n"
 			
 			sys.stdout.write(str_table)
+
+			# sleep for a bit
+			gevent.sleep(self.update)
