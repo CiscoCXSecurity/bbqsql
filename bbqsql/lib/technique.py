@@ -99,6 +99,12 @@ class Character():
         #clear the note regarding the running greenlet
         self.run_gl = None
     
+    def get_status(self):
+        if self.error: return "error"
+        if self.working: return "working"
+        if self.done: return "success"
+        return "unknown"
+    
     def _die_callback(self,event):
         #we do the next_event because the first event might be first for the last character. 
         #this way we can fire the die event multiple times if necessary
@@ -126,6 +132,11 @@ class Character():
         
         if y == "success":
             return self.done and (not self.error)
+        
+        if y.hasattr('char_val'):
+            return self.char_val == y.char_val
+        
+        return self.char_val == y
         
     def __ne__(self,y):
         return not self.__eq__(y)
@@ -351,8 +362,11 @@ class BlindTechnique(Technique):
 
         return self.rungl
 
-    def get_results(self):
-        return filter(lambda row: row != '',[''.join([str(x) for x in row]) for row in self.results])
+    def get_results(self,color=False):
+        if not color:
+            return filter(lambda row: row != '',[''.join([str(x) for x in row]) for row in self.results])
+        return filter(lambda row: row != '',[''.join([COLORS[x.get_status()] + str(x) + COLORS['endc'] for x in row]) for row in self.results])        
+
 
     def get_status(self):
         status = ""

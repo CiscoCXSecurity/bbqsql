@@ -16,6 +16,12 @@ PRETTY_PRINT = True
 #How often to refresh the screen while pretty printing (lower looks better but is processor intensive)
 PRETTY_PRINT_FREQUENCY = .2
 
+COLORS = {\
+    'success':'\033[0m',\
+    'working':'\033[37m',\
+    'error':'\033[101m',\
+    'unknown':'\033[101m',\
+    'endc':'\033[0m'}
 
 #######################
 # Blind Technique Stuff

@@ -3,6 +3,11 @@ from gevent.event import Event
 
 from subprocess import Popen,PIPE,STDOUT
 import sys
+import re
+
+def len_less_color(line):
+	'''return the length of a string with the color characters stripped out'''
+	return len(re.sub(u'\033\[[0-9]+m','',line))
 
 class PrettyTable:
 	def __init__(self,get_table_callback=None,get_status_callback=None,update=.2,row_filter=None):
@@ -34,7 +39,7 @@ class PrettyTable:
 			self.sizey,self.sizex = 40,150
 
 	def _is_linux(self):
-		return 'linux' in sys.platform
+		return 'linux' in sys.platform or 'darwin' in sys.platform
 	
 	def _table_printer(self):
 		'''
@@ -44,13 +49,13 @@ class PrettyTable:
 		i = 0
 		while True:
 			gevent.sleep(self.update)
-			table = self.get_table_callback()
+			table = self.get_table_callback(color=True)
 
 			table = filter(self.row_filter,table)
 
 			#figure out how many new lines are needed to be printed before the table data
 			tlen = len(table)
-			new_lines_needed = self.sizey - tlen - reduce(lambda x,row: x + len(row) // self.sizex,table,0) - 3
+			new_lines_needed = self.sizey - tlen - reduce(lambda x,row: x + len_less_color(row) // self.sizex,table,0) - 3
 
 			#start building out table,
 			str_table = "\n"
