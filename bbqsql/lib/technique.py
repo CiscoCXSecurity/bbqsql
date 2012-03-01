@@ -284,7 +284,8 @@ class BlindTechnique(Technique):
         '''
         look at how many gevent "threads" are being used and add more rows to correct this
         '''
-        rows_to_work_on = 5
+        rows_to_work_on = self.concurrency // self.row_len
+        rows_to_work_on = [rows_to_work_on,1][rows_to_work_on == 0]
         while not self.shutting_down.is_set():
             # add rows until we realize that we are at the end of rows
             if len(self.results) and filter(lambda row: len(row) and row[0] == 'error',self.results):
