@@ -264,25 +264,19 @@ class BlindTechnique(Technique):
         '''
         while not self.shutting_down.is_set():
             self.results_lock.acquire()
-            for row in self.results:
-                #if we have reached the end of a row without encountering an error, we need to increase the len of the row
-                if len(row) == self.row_len and row[-1] == 'success':
-                    denominator = len(filter(lambda row:'working' in row,self.results))
 
-                    if denominator == 0:
-                        denominator = len(filter(lambda row:'error' not in row,self.results))
-
-                    if denominator == 0:
-                        self.row_len += 1
-                    else:
-                        add = self.concurrency / denominator
-                        add = [add,1][add == 0]
-                        self.row_len += add
+            unused_threads = self.concurrency - reduce(lambda x,row: x + row.count('working'),self.results,0)
+            rows_working = len(filter(lambda row: 'working' in row,self.results))
+            if rows_working == 0:
+                add_to_rows = self.row_len
+            else:
+                add_to_rows = unused_threads//rows_working
+                add_to_rows = [add_to_rows,1][add_to_rows==0]
 
             for row_index in range(len(self.results)):
                 #if the row isn't finished or hasn't been started yet, we add Character()s to the row
                 if 'error' not in self.results[row_index]:
-                    self.results[row_index] += [self.char_gens[row_index].next() for i in range(self.row_len - len(self.results[row_index]))]
+                    self.results[row_index] += [self.char_gens[row_index].next() for i in range(add_to_rows)]
             self.results_lock.release()
             gevent.sleep(.3)
 
@@ -391,6 +385,7 @@ class BlindTechnique(Technique):
         status += "requests: %d\t" % self.request_count
         status += "failures: %d\t" % self.failure_count
         status += "rows: %d\t" % reduce(lambda x,row: ('success' in row)+x,self.results,0)
+        status += "working threads: %d\t" %  reduce(lambda x,row: x + row.count('working'),self.results,0)
         
         chars = reduce(lambda x,row: row.count('success') + x,self.results,0)
         status += "chars: %d\t" % chars
