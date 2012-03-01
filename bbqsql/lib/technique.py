@@ -73,9 +73,15 @@ class Character():
         self.working = True        
 
         #binary search unless we hit an error
-        while low < high and not self.error and self.working:
+        while not self.error and self.working:
             mid = (low+high)//2
             self.char_val = CHARSET[mid]
+
+            if low >= high:
+                self.error = True
+                self.row_die.set((self.char_index,AsyncResult()))
+                break
+
             if self._test("<"):
                 #print "data[%d][%d] > %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],ord(CHARSET[mid]))
                 high = mid
@@ -85,11 +91,14 @@ class Character():
             elif low < CHARSET_LEN and self._test("="):
                 #print "data[%d][%d] = %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],ord(CHARSET[mid]))
                 self.working = False
+                break
             else:
                 #if there isn't a value for the character we are working on, that means we went past the end of the row.
                 #we set error and kill characters after us in the row.
                 self.error = True
                 self.row_die.set((self.char_index,AsyncResult()))
+                break
+
 
             gevent.sleep(0)
             

