@@ -9,6 +9,7 @@ from gevent.event import AsyncResult,Event
 from gevent.coros import Semaphore
 from gevent.queue import Queue
 from gevent.pool import Pool
+from time import time
 from copy import copy
 
 
@@ -350,6 +351,8 @@ class BlindTechnique(Technique):
             :row_len        An estimated starting point for the length of rows. This will get adjusted as the attack goes on.
             :sleep          if this is time based blind SQLi, then we will need to know how much to tell the DB to sleep.
         '''
+        self.run_start_time = time()
+
         if self.rungl != None:
             self.rungl.kill()
 
@@ -362,7 +365,7 @@ class BlindTechnique(Technique):
         self._reset()
 
         self.rungl = gevent.spawn(self._run)
-
+        
         return self.rungl
 
     def get_results(self,color=False):
@@ -398,6 +401,11 @@ class BlindTechnique(Technique):
         
         chars = reduce(lambda x,row: row.count('success') + x,self.results,0)
         status += "chars: %d\t" % chars
+
+        if self.run_start_time:
+            run_time = time() - self.run_start_time
+            status += "time: %f\t" % run_time
+            status += "char/sec: %f\t" % (chars/run_time)
 
         if chars: rc = float(self.request_count) / chars
         else: rc = 0.0
