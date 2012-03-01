@@ -284,15 +284,14 @@ class BlindTechnique(Technique):
         '''
         look at how many gevent "threads" are being used and add more rows to correct this
         '''
+        rows_to_work_on = 5
         while not self.shutting_down.is_set():
             # add rows until we realize that we are at the end of rows
             if len(self.results) and filter(lambda row: len(row) and row[0] == 'error',self.results):
                 break
             
-            unused_threads = self.concurrency - reduce(lambda x,row: x + row.count('working'),self.results,0)
-            rows_needed = unused_threads//self.row_len
-            rows_needed = [rows_needed,1][rows_needed == 0 and unused_threads > 0]
-            [self.row_gen.next() for i in xrange(rows_needed)]
+            working_rows = len(filter(lambda row: 'working' in row,self.results))
+            [self.row_gen.next() for row in range(rows_to_work_on - working_rows)]
             gevent.sleep(.3)
         
         while not self.shutting_down.is_set():
