@@ -370,14 +370,16 @@ class BlindTechnique(Technique):
         running_status = "unknown"
 
         for row in self.results:
-            row_string = ""
-            for c in row:
-                cstatus = c.get_status()
-                if cstatus != running_status:
-                    row_string += COLORS[cstatus]
-                    running_status = cstatus
-                row_string += str(c)
-            rval.append(row_string + COLORS['endc'])
+            if len(row):
+                    running_status = "unknown"
+                    row_string = ""
+                    for c in row:
+                        cstatus = c.get_status()
+                        if cstatus != running_status:
+                            row_string += COLORS[cstatus]
+                            running_status = cstatus
+                        row_string += str(c)
+                    rval.append(row_string + COLORS['endc'])
         return rval
             
 
