@@ -1,9 +1,10 @@
-import gevent
-from gevent.event import Event
+# file: pretty_print.py
 
-from subprocess import Popen,PIPE,STDOUT
 import sys
 import re
+import gevent
+from gevent.event import Event
+from subprocess import Popen,PIPE,STDOUT
 
 def len_less_color(line):
 	'''return the length of a string with the color characters stripped out'''

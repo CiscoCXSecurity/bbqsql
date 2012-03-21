@@ -27,18 +27,23 @@ COLORS = {\
 # Blind Technique Stuff
 #######################
 
+#mappings from response attributes to Requester subclasses
+from .requester import *
+response_attributes = {\
+    'status_code':Requester,\
+    'url':Requester,\
+    'time':LooseNumericRequester,\
+    'size':LooseNumericRequester,\
+    'text':LooseTextRequester,\
+    'content':LooseTextRequester,\
+    'encoding':LooseTextRequester,\
+    'cookies':LooseTextRequester,\
+    'headers':LooseTextRequester,\
+    'history':LooseTextRequester
+}
+
 #How many base requests to make to setup Truth() objects
 TRUTH_BASE_REQUESTS = 5
-
-# this specifies the available comparison attributes, what Truth class to use for the and what standard deviation is acceptable in that Truth class
-from lib import *
-COMPARISON_ATTRS = {\
-        "content"       :{'truth':truth.LooseTextTruth,'std':.6},\
-        "text"          :{'truth':truth.LooseTextTruth,'std':.6},\
-        "size"          :{'truth':truth.LooseNumericTruth,'std':1},\
-        "response_time" :{'truth':truth.LooseNumericTruth,'std':4},\
-        "status_code"   :{'truth':truth.Truth,'std':1}\
-}
 
 # These are the available comparison operators as well as their oposites.
 OPPOSITE_COMPARATORS = {"<":">",">":"<","=":"!=","!=":"="}

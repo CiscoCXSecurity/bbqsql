@@ -1,7 +1,6 @@
 #file: technique.py
 
-from .truth import Truth
-from ..settings import *
+from .settings import *
 from .exceptions import *
 
 import gevent
@@ -9,9 +8,11 @@ from gevent.event import AsyncResult,Event
 from gevent.coros import Semaphore
 from gevent.queue import Queue
 from gevent.pool import Pool
+
 from time import time
 from copy import copy
 
+__all__ = ['BooleanBlindTechnique']
 
 class Technique(object):
     '''
@@ -21,9 +22,9 @@ class Technique(object):
     The class init init will (almost?) always take a make_request_func as a param. This
     option specifies the function to call to make an actual request. 
     '''
-    def __init__(self,make_request_func,query):
+    def __init__(self,query,requester):
         self.query = query
-        self.make_request_func = make_request_func
+        self.requester = requester
 
         if type(self) == Technique:
             raise NotImplemented
@@ -168,12 +169,11 @@ class Character():
         return id(self)
 
 
-class BlindTechnique(Technique):
-    def __init__(self,truth = Truth(), *args, **kwargs):
-        self.truth = truth
+class BooleanBlindTechnique(Technique):
+    def __init__(self, *args, **kwargs):
         self.rungl = None
 
-        super(BlindTechnique,self).__init__(*args,**kwargs)
+        super(BooleanBlindTechnique,self).__init__(*args,**kwargs)
 
     def _reset(self):
         '''
@@ -227,7 +227,7 @@ class BlindTechnique(Technique):
             response = None
             while response == None:
                 try:
-                    response = self.make_request_func(query_string)
+                    response = self.requester.make_request(query_string)
                 except SendRequestFailed:
                     self.failure_count += 1
                     response = None
@@ -235,9 +235,7 @@ class BlindTechnique(Technique):
                     if count == 10: raise SendRequestFailed('cant request')
                 count += 1
 
-            t = self.truth.test(response)
-
-            char_asyncresult.set(t)
+            char_asyncresult.set(response)
 
     def _row_generator(self):
         '''

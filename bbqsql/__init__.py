@@ -22,8 +22,7 @@ b::::::b           b::::::b                                S:::::SSSSSS::::::S Q
                                                   '''''''''
 
 __title__ = 'bbqsql'
-__version__ = '0.0.1'
-__build__ = 0x000001
+__version__ = '0.0.2'
 __author__ = 'Ben Toews (mastahyeti)'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2012 Ben Toews (mastahyeti)'

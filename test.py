@@ -9,7 +9,7 @@ test_data = ['Strange women lying in ponds distributing swords is no basis for a
 
 class TestBlindRequester(unittest.TestCase):
     def test_exploit(self):
-        bh = bbqsql.BlindHTTP()
+        bh = bbqsql.BooleanBlindSQLi()
         results = bh.run(concurrency=100)
         self.assertEqual(results,test_data)
 
