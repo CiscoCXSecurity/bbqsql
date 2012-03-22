@@ -38,7 +38,10 @@ def parse_response(env, start_response):
         char_index = int(params['character_index'][0]) - 1
         test_char = int(params['character_value'][0])
         comparator = comparators.index(params['comparator'][0]) - 1
-        sleep_int = float(params['sleep'].pop(0))
+        try:
+            sleep_int = float(params['sleep'].pop(0))
+        except KeyError:
+            sleep_int = 1
 
         # Determine which character position we are at during the injection
         current_character = datas[row_index][char_index]

