@@ -1,4 +1,4 @@
 import api
 from api import *
 
-__all__ = api.__all__
+__all__ = ['Query','BlindSQLi']
