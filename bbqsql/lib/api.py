@@ -1,6 +1,6 @@
 from .query import Query
 from .pretty_print import PrettyTable
-from .technique import BooleanBlindTechnique
+from .technique import BooleanBlindTechnique,FrequencyTechnique
 import settings
 
 from urllib import quote
@@ -50,7 +50,7 @@ class BooleanBlindSQLi:
 
     def run(self,query='SELECT user()',sleep=0,concurrency=50):     
         #build our technique
-        tech = BooleanBlindTechnique(requester=self.requester,query=self.query)
+        tech = FrequencyTechnique(requester=self.requester,query=self.query)
         
         if settings.PRETTY_PRINT and not settings.QUIET:
             #setup a PrettyTable for curses like printing
