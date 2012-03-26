@@ -480,3 +480,30 @@ class FrequencyTechnique(BooleanBlindTechnique):
             self.results_lock.release()
             gevent.sleep(.3)
 
+    def _add_rows(self):
+        '''
+        look at how many gevent "threads" are being used and add more rows to correct this
+        '''
+        while not self.shutting_down.is_set():
+            # add rows until we realize that we are at the end of rows
+            if len(self.results) and filter(lambda row: len(row) and row[0] == 'error',self.results):
+                break
+            
+            working_rows = len(filter(lambda row: 'working' in row,self.results))
+            [self.row_gen.next() for row in range(self.concurrency - working_rows)]
+            gevent.sleep(.3)
+        
+        while not self.shutting_down.is_set():
+            self.results_lock.acquire()
+            # delete any rows that shouldn't have been added in the first place
+            errored = filter(lambda ri: len(self.results[ri]) and self.results[ri][0] == 'error',range(len(self.results)))
+            if errored:
+                end = min(errored)
+                for ri in xrange(len(self.results)-1,end-1,-1):
+                    del(self.results[ri])
+
+            self.results_lock.release()    
+            #if there aren't going to be any more rows in need of deletion we can stop this nonsense
+            if self.results and self.results[-1][0] == 'success':
+                break
+            gevent.sleep(.3)
