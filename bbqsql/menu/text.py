@@ -36,8 +36,8 @@ bob=foo; jsessionid=someidhere; cart=${injection}
 """ + bcolors.BOLD + """You must specifcy the ${injection} tag or the tool will not run!""" + bcolors.ENDC + """
 \n"""
 
-main_menu = ['Time Based SQL Injection',
-	     'UNION Based SQL Injection (not implemented)',
+main_menu = ['Binary Search Blind SQL Injection',
+	     'Character Frequency Search Blind SQL Injection',
 	     'Options (not implemented)',
 	     'Help, Credits, and About (not implemented)']	     
 

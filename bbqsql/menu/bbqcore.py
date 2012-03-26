@@ -104,16 +104,16 @@ def setprompt(category, text):
 
     # if no special prompt and no text, return plain prompt
     if category == '0' and text == "":
-        return bcolors.UNDERL + bcolors.DARKCYAN + "set" + bcolors.ENDC + "> "
+        return bcolors.UNDERL + bcolors.DARKCYAN + "bbqsql" + bcolors.ENDC + "> "
 
     # if the loop is here, either category or text was positive
     # if it's the category that is blank...return prompt with only the text
     if category == '0':
-        return bcolors.UNDERL + bcolors.DARKCYAN + "set" + bcolors.ENDC + "> " + text + ": "
+        return bcolors.UNDERL + bcolors.DARKCYAN + "bbqsql" + bcolors.ENDC + "> " + text + ": "
     # category is NOT blank
     else:
         # initialize the base 'set' prompt
-        prompt = bcolors.UNDERL + bcolors.DARKCYAN + "set" + bcolors.ENDC
+        prompt = bcolors.UNDERL + bcolors.DARKCYAN + "bbqsql" + bcolors.ENDC
 
         # if there is a category but no text
         if text == "":
@@ -153,8 +153,7 @@ class Validator:
 
     def validate_input_blind(self):
         return
-
-
+        
 
 class CreateMenu:
     def __init__(self, text, menu):
@@ -180,4 +179,3 @@ class CreateMenu:
             else:
                 print '\n  99) Return to Main Menu\n'
         return
-

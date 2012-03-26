@@ -28,6 +28,6 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2012 Ben Toews (mastahyeti)'
 
 from lib import *
-from menu import * 
+from menu import bbqMenu 
 
-__all__ = ['Query','BlindSQLi']
+__all__ = ['Query','BlindSQLi','bbqMenu']

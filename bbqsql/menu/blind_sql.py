@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
 ###############################################
-from .utils import validate_url
+from utils import validate_url
+from .. import lib
 
 import subprocess
 import os
@@ -18,6 +19,68 @@ import traceback
 # Define path and set it to the bbqsql root dir
 ###############################################
 
+
+bbqsql_config = [\
+    {'name':'allow_redirects',\
+        'value':None,\
+        'types':[bool],\
+        'required':False,\
+        'validator':None},\
+    \
+    {'name':'auth',\
+        'value':None,\
+        'types':[tuple],
+        'required':False,\
+        'validator':None},\
+    \
+    {'name':'cookies',\
+        'value':None,\
+        'types':[bool],\
+        'required':False,\
+        'validator':None},\
+    \
+    {'name':'data',\
+        'value':None,\
+        'types':[bool],\
+        'required':False,\
+        'validator':None},\
+    \
+    {'name':'files',\
+        'value':None,\
+        'types':[bool],\
+        'required':False,\
+        'validator':None},\
+    \
+    {'name':'headers',\
+        'value':None,\
+        'types':[bool],\
+        'required':False,\
+        'validator':None},\
+    \
+    {'name':'method',\
+        'value':None,\
+        'types':[bool],\
+        'required':True,\
+        'validator':None},\
+    \
+    {'name':'params',\
+        'value':None,\
+        'types':[bool],\
+        'required':False,\
+        'validator':None},\
+    \
+    {'name':'proxies',\
+        'value':None,\
+        'types':[bool],\
+        'required':False,\
+        'validator':None},\
+    \
+    {'name':'url',\
+        'value':None,\
+        'types':[str,],\
+        'required':True,\
+        'validator':validate_url},\
+    ]
 
 definepath = os.getcwd()
 #os.chdir(definepath)
@@ -55,7 +118,7 @@ try:
      # If the user has chosen '1', then walk the user though attack configuration
      if blind_menu_choice == '1':
          url = raw_input(bbqcore.setprompt(["1"], " Enter the URL "))
-         
+
          # Check if this is a vliad URL, and if it isn't quit
          if not validate_url(url):
              print "not a valid url...quitting\n"
@@ -157,7 +220,7 @@ try:
              print run_data
 
           #print '\n' + url, query, dictionaries.comparison(str(http_method)), http_method_parameters, cookie_parameters, attr
-             final_check = raw_input(bbqcore.setprompt(["1"], " DOes this look correct?"))
+             final_check = raw_input(bbqcore.setprompt(["1"], " Does this look correct?"))
              bbqcore.ExitBBQ()
 
      # If the user has chosen '2', request configuration, validate, and execute attack
