@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #
 ###############################################
+from .utils import validate_url
+
 import subprocess
 import os
 import time
@@ -12,7 +14,6 @@ import text
 import yaml
 import dictionaries
 import traceback
-from lepl.apps.rfc3696 import HttpUrl
 ###############################################
 # Define path and set it to the bbqsql root dir
 ###############################################
@@ -54,11 +55,9 @@ try:
      # If the user has chosen '1', then walk the user though attack configuration
      if blind_menu_choice == '1':
          url = raw_input(bbqcore.setprompt(["1"], " Enter the URL "))
+         
          # Check if this is a vliad URL, and if it isn't quit
-         valid_http_url = HttpUrl()
-         if valid_http_url(url):
-             pass
-         else:
+         if not validate_url(url):
              print "not a valid url...quitting\n"
              time.sleep(3)
              break
