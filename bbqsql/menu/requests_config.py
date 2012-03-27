@@ -1,5 +1,84 @@
 from bbqsql import Query
-from utils import validate_url
+from urlparse import urlparse
+import socket
+import os
+
+class ConfigError(Exception):
+    '''Throw this exception when a method that hasn't been implemented gets called'''
+    def __init__(self, value):
+        self.value = value
+    def __repr__(self):
+        return "You have a config error: " + self.value
+
+def validate_ath(thing):
+    if not (len(thing['value'])==2 and (type(thing['value'][0])==str or type(thing['value'][0])==Query) and (type(thing['value'][1])==str or type(thing['value'][1])==Query)):
+        raise ConfigError("auth should be a tuple of two strings. Eg. ('username','password')")
+
+def validate_cookies(thing):
+    if type(thing['value']) == str:
+        try:
+            list_cookies = thing['value'].split(';')
+            dict_cookies = {}
+            for c in list_cookies:
+                parts = c.split('=',1)
+                dict_cookies[parts[0]] = parts[1].strip()
+            thing['value'] = dict_cookies
+        except:
+            raise ConfigError("You provided your cookies as a string. Thats okay, but it doesn't look like you formatted them properly")
+    for k in thing['value']:
+        if (type(k) != str and type(k) != Query)  or (type(thing['value'][k]) != str and (thing['value'][k]) != Query):
+            raise ConfigError("Keys and values for cookies need to be strings.")
+
+def validate_headers(thing):
+    if type(thing['value']) == str:
+        try:
+            parts = thing['value'].split(':')
+            headers = {parts[0]:parts[1].strip()}
+            thing['value'] = headers
+        except:
+            raise ConfigError("You provided your headers as a string. Thats okay, but it doesn't look like you formatted them properly")
+    for k in thing['value']:
+        if (type(k) != str and type(k) != Query)  or (type(thing['value'][k]) != str and (thing['value'][k]) != Query):
+            raise ConfigError("Keys and values for headers need to be strings.")
+
+def validate_data(thing):
+    if type(thing['value']) == dict:
+        for k in thing['value']:
+            if (type(k) != str and type(k) != Query) or (type(thing["value"][k]) != str and type(thing["value"][k]) != Query):
+                raise ConfigError('You provided your data as a dict. The keys and values need to be strings')
+
+def validate_files(thing):
+    if type(thing['value']) == str:
+        try:
+            f = open(thing['value'],'r')
+            n = os.path.basename(thing['value'])
+            thing['value'] = {n:f}
+        except:
+            raise ConfigError("You provided files as a string. I couldn't find the file you specified")
+    
+    for k in thing['value']:
+        if type(thing['value'][k]) != file:
+            raise ConfigError("You have a non-file object in the file parameter.")
+
+def validate_method(thing):
+    if thing['value'].lower() not in ['get','options','head','post','put','patch','delete']:
+        raise ConfigError("The valid options for method are: ['get','options','head','post','put','patch','delete']")
+
+def validate_params(thing):
+    if type(thing['value']) == dict:
+        for k in thing['value']:
+            if (type(k) != str and type(k) != Query) or (type(thing['value'][k]) != str and type(thing['value'][k]) != Query):
+                raise ConfigError("You provided params as a dict. Keys are values for this dict must be strings.")
+
+def validate_url(thing):
+    parsed_url = urlparse(thing['value'])
+    try:
+        socket.gethostbyname(parsed_url.netloc)
+    except socket.error:
+        raise ConfigError('Invalid host name. Cannot resolve.')
+    if parsed_url.scheme.lower() not in ['http','https']:
+        raise ConfigError('Invalid url scheme. Only http and https')
+    return thing
 
 class RequestsConfig:
     config = {\
@@ -16,66 +95,49 @@ class RequestsConfig:
             'description':'',\
             'types':[tuple],
             'required':False,\
-            'validator':lambda a:\
-                len(a)==2 \
-                and \
-                    (type(a[0])==str\
-                    or type(a[0])==Query)\
-                and \
-                    (type(a[1])==str\
-                    or type(a[1])==Query)},\
+            'validator':validate_ath},\
         'cookies':\
             {'name':'cookies',\
             'value':None,\
             'description':'',\
-            'types':[dict],\
+            'types':[dict,str],\
             'required':False,\
-            'validator': lambda c:not len(filter(lambda k:type(c[k]) != str and type(c[k]) != Query,c.keys()))},\
+            'validator': validate_cookies},\
         'data':\
             {'name':'data',\
             'value':None,\
             'description':'',\
             'types':[dict,str,Query],\
             'required':False,\
-            'validator': lambda d:\
-                type(d) == str\
-                or type(d) == Query\
-                or type(d) == dict\
-                    and not len(filter(lambda k:type(d[k]) != str and type(d[k]) != Query,d.keys()))},\
+            'validator': validate_data},\
         'files':\
             {'name':'files',\
             'value':None,\
             'description':'',\
-            'types':[dict],\
+            'types':[dict,str],\
             'required':False,\
-            'validator': lambda f:not len(filter(lambda k:type(f[k]) != file,f.keys()))},\
+            'validator': validate_files},\
         'headers':\
             {'name':'headers',\
             'value':None,\
             'description':'',\
-            'types':[dict],\
+            'types':[dict,str],\
             'required':False,\
-            'validator': lambda d:\
-                type(d) == Query\
-                or type(d) == dict\
-                    and not len(filter(lambda k:type(d[k]) != str and type(d[k]) != Query,d.keys()))},\
+            'validator': validate_headers},\
         'method':\
             {'name':'method',\
             'value':None,\
             'description':'',\
             'types':[str],\
             'required':True,\
-            'validator':lambda m: m.lower() in ['get','options','head','post','put','patch','delete']},\
+            'validator':validate_method},\
         'params':\
             {'name':'params',\
             'value':None,\
             'description':'',\
-            'types':[dict],\
+            'types':[dict,str,Query],\
             'required':False,\
-            'validator': lambda d:\
-                type(d) == Query\
-                or type(d) == dict\
-                    and not len(filter(lambda k:type(d[k]) != str and type(d[k]) != Query,d.keys()))},\
+            'validator': validate_params},\
         'proxies':\
             {'name':'proxies',\
             'value':None,\
@@ -101,9 +163,12 @@ class RequestsConfig:
             elif type(self.config[key]['value']) not in self.config[key]['types']:
                 valid = False
                 if not quiet: print "You gave a value of an illeage type for '%s'" % key
-            elif self.config[key]['validator'] and not self.config[key]['validator'](self.config[key]['value']):
-                valid = False
-                if not quiet: print "You gave an invalid value for '%s'" % key
+            elif self.config[key]['validator']:
+                try:
+                    self.config[key]['validator'](self.config[key])
+                except ConfigError, err:
+                    if not quiet: print err
+                    valid = False
         
         return valid
     
