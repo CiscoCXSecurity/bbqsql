@@ -1,5 +1,3 @@
-#!/usr/bin/python
-import os,subprocess,sys
 import bbqcore
 from bbqcore import bcolors
 import text

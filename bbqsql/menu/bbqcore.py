@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Centralized classes, work in progress
 # 
@@ -153,7 +152,7 @@ class Validator:
 
     def validate_input_blind(self):
         return
-        
+
 
 class CreateMenu:
     def __init__(self, text, menu):
