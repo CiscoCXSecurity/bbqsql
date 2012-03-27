@@ -145,3 +145,12 @@ class RequestsConfig:
         if key not in self.config:
             raise KeyError
         self.config[key] = val
+
+    def __repr__(self):
+        out = {}
+        for key in self.config:
+            out[key] = self.config[key]['value']
+        return repr(out)
+    
+    def __str__(self):
+        return self.__repr__()
