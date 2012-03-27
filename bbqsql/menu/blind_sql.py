@@ -45,7 +45,7 @@ try:
         # If the user has chosen '1', then walk the user though attack configuration
         if choice == '1':
             choice = ''
-            while not ((choice in ['done','99'] and requests_config.validate(quiet=True)) or choice in ['quit','exit']):
+            while not ((choice in ['done'] and requests_config.validate(quiet=True)) or choice in ['quit','exit',99,'99']):
                 bbqcore.show_banner(define_version,'1.0')
                 http_main_menu = bbqcore.CreateMenu(text.http_text, [])
                 
@@ -57,6 +57,7 @@ try:
                     if requests_config[key]['description'] != '':
                         print "\t   Description: %s" % requests_config[key]['description']
                 print "\n"
+                requests_config.validate()
 
                 #get input
                 choice = (raw_input(bbqcore.setprompt("1", "")))
@@ -83,7 +84,7 @@ try:
                     requests_config[key]['value'] = value 
                     requests_config.validate()
             
-            if choice in ['done',99,'99']:
+            if type(choice) == str and choice.lower() == 'done':
                  # What type of attribute are we gonna use?  
                  attr_main_menu = bbqcore.CreateMenu(text.comparison_text, text.comparison_menu)
                  print '\n  99) Return back to the main menu.\n'
