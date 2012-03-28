@@ -64,6 +64,7 @@ class bcolors:
 # Class for colors
 #
 def ExitBBQ(exitcode=0):
+    os.system('clear')
     print "\n\n Goodbye " + bcolors.RED + pwd.getpwuid(os.getuid()).pw_name + bcolors.ENDC+",  and enjoy a hot plate of ribs on the house.\n"
     sys.exit(exitcode)
 
@@ -135,24 +136,6 @@ def setprompt(category, text):
             promptstring = str(prompt)
             promptstring = promptstring + "> " + text + ": "
             return promptstring
-
-class Validator:
-    '''Validate input for attacks to ensure correctness INCOMPLETE'''
-    
-
-    def __init__(self, input_string = None, input_file = None):
-        self.input_string = input_string
-        self.input_file = input_file
-
-    def validate_config_blind(self):
-        parsed_config =  yaml.load(self.input_file)
-        print parsed_config
-        time.sleep(5)
-        return
-
-
-    def validate_input_blind(self):
-        return
 
 
 class CreateMenu:

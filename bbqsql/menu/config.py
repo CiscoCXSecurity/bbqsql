@@ -230,9 +230,9 @@ class RequestsConfig:
                 except:
                     pass
                 self[key]['value'] = value 
-
-        return choice     
-
+            
+        if choice in ['exit','quit']:
+            bbqcore.ExitBBQ(0)
     
     def keys(self):
         return self.config.keys()
