@@ -158,6 +158,8 @@ class RequestsConfig:
             'required':True,\
             'validator':validate_url}}
 
+    menu_text = "We need to determine what our HTTP request will look like. Bellow are the\navailable HTTP parameters. Please enter the number of the parameter you\nwould like to edit. When you are done setting up the HTTP parameters,\nyou can type 'done' to keep going.\n"
+
     def validate(self,quiet=False):
         valid = True
         for key in self.config:
@@ -192,7 +194,7 @@ class RequestsConfig:
         choice = ''
         while not ((choice in ['done'] and self.validate(quiet=True)) or choice in ['quit','exit',99,'99']):
             bbqcore.show_banner()
-            http_main_menu = bbqcore.CreateMenu(text.http_text, [])
+            http_main_menu = bbqcore.CreateMenu(self.menu_text, [])
             
             for ki in xrange(len(config_keys)):
                 key = config_keys[ki]
@@ -293,25 +295,27 @@ class bbqsqlConfig(RequestsConfig):
     config = {\
         'concurrency':\
             {'name':'concurrency',\
-            'value':None,\
+            'value':50,\
             'description':'Controls the amount of concurrency to run the attack with. This is useful for throttling the requests',\
             'types':[str,int],\
-            'required':False,\
+            'required':True,\
             'validator':validate_allow_redirects},\
         'search_type':\
             {'name':'search_type',\
             'value':'binary_search',\
             'description':'Determines the method for searching. Can either do a binary search algorithm or a character frequency based search algorithm. You probably want to use binary. The allowed values for this are "binary_search" or "frequency_search".',\
             'types':[str],\
-            'required':False,\
+            'required':True,\
             'validator':validate_allow_redirects},\
         'query':\
             {'name':'query',\
-            'value':'',\
+            'value':None,\
             'description':text.query_text,\
             'types':[str,Query],\
-            'required':False,\
+            'required':True,\
             'validator':validate_allow_redirects}}
+
+    menu_text = "Please specify the following configuration parameters.\n"
 
 
 
