@@ -1,5 +1,6 @@
 import bbqcore
 from bbqcore import bcolors
+from config import RequestsConfig,bbqsqlConfig
 import text
 
 
@@ -9,27 +10,32 @@ class bbqMenu:
         define_version = 1.0
 
         try:
-         
-             # intitial user menu
-            while 1:
+            requests_config = RequestsConfig()
+            bbqsql_config = bbqsqlConfig()
+
+            # intitial user menu
+            choice = ''
+            while choice not in ['99',99,'quit','exit']:
                 bbqcore.show_banner()
                 show_main_menu = bbqcore.CreateMenu(text.main_text, text.main_menu)
          
                  # special case of list item 99
                 print '\n  99) Exit the bbqsql injection toolkit\n'
          
+                requests_config.validate()
+                bbqsql_config.validate()
+
                 # mainc ore menu
-                main_menu_choice = (raw_input(bbqcore.setprompt("0", "")))
+                choice = (raw_input(bbqcore.setprompt("0", "")))
 
-                # quit out
-                if main_menu_choice == 'exit' or main_menu_choice == "99" or main_menu_choice == "quit":
-                    bbqcore.ExitBBQ(0)
-                   # cleans up stale processes from SET
+                if choice == '1': # Binary Blind SQL Injection Test
+                    requests_config.run_config()
+                
+                if choice == '2':
+                    bbqsql_config.run_config()
 
-                if main_menu_choice == '1': # Binary Blind SQL Injection Test
-                    print '1'
-                    try: reload(blind_sql)
-                    except: import blind_sql
+            
+            bbqcore.ExitBBQ(0)
             
         # ## handle keyboard interrupts
         except KeyboardInterrupt:

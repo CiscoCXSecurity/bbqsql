@@ -192,7 +192,7 @@ class RequestsConfig:
     def run_config(self):
         config_keys = self.config.keys()
         choice = ''
-        while not ((choice in ['done'] and self.validate(quiet=True)) or choice in ['quit','exit',99,'99']):
+        while choice not in ['done','back','quit','exit',99,'99']:
             bbqcore.show_banner()
             http_main_menu = bbqcore.CreateMenu(self.menu_text, [])
             
@@ -299,21 +299,21 @@ class bbqsqlConfig(RequestsConfig):
             'description':'Controls the amount of concurrency to run the attack with. This is useful for throttling the requests',\
             'types':[str,int],\
             'required':True,\
-            'validator':validate_allow_redirects},\
+            'validator':validate_concurrency},\
         'search_type':\
             {'name':'search_type',\
             'value':'binary_search',\
             'description':'Determines the method for searching. Can either do a binary search algorithm or a character frequency based search algorithm. You probably want to use binary. The allowed values for this are "binary_search" or "frequency_search".',\
             'types':[str],\
             'required':True,\
-            'validator':validate_allow_redirects},\
+            'validator':validate_search_type},\
         'query':\
             {'name':'query',\
             'value':None,\
             'description':text.query_text,\
             'types':[str,Query],\
             'required':True,\
-            'validator':validate_allow_redirects}}
+            'validator':validate_query}}
 
     menu_text = "Please specify the following configuration parameters.\n"
 
