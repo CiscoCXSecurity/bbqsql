@@ -12,7 +12,7 @@ class bbqMenu:
          
              # intitial user menu
             while 1:
-                bbqcore.show_banner(define_version,'1')
+                bbqcore.show_banner()
                 show_main_menu = bbqcore.CreateMenu(text.main_text, text.main_menu)
          
                  # special case of list item 99

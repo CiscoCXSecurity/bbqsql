@@ -94,3 +94,9 @@ class Query(object):
                 output += val
                 output += right
         return output
+    
+    def __repr__(self):
+        return selt.q_string
+    
+    def __str__(self):
+        return self.__repr__()
