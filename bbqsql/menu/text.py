@@ -18,12 +18,12 @@ main_menu = ['Setup HTTP Parameters',
 
 query_text = """
 The query input is where you will construct your query used
-to exfiltrate informaiton from the database.  The assumption is
-that you already have identified SQL injeciton on a vulnerable
-parameter, and have tested a query that is sucessful.
+to exfiltrate information from the database.  The assumption is
+that you already have identified SQL injection on a vulnerable
+parameter, and have tested a query that is successful.
 
 Below is an example query you can use to construct your query.
-In this example, the attacker is lookinn to select the database
+In this example, the attacker is looking to select the database
 version:
 """ + bcolors.RED + """
 vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT
@@ -35,7 +35,7 @@ in order for the attack to work.  Once you put these in your
 query, bbqsql will do the rest:
 
 """ + bcolors.BOLD + """${row_index}""" + bcolors.ENDC + """= This tells bbqsql to iterate rows here.  Since
-we are using LIMIT we can view n number of rows depeding on
+we are using LIMIT we can view n number of rows depending on
 ${row_index} value
 
 """ + bcolors.BOLD + """${char_index}""" + bcolors.ENDC + """ = This tells bbqsql which character from the 
@@ -45,7 +45,7 @@ subselect to query.
 from the subselect to validate the result
 
 """ + bcolors.BOLD + """${sleep}""" + bcolors.ENDC + """ = This is optional but tells bbqsql where to insert
- the number of seconds to sleep when perofrming time basd sql 
+ the number of seconds to sleep when performing time based sql 
  injection
 
 
