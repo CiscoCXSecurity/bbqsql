@@ -246,6 +246,7 @@ class RequestsConfig:
                 if self[key]['value'] is not None:
                     print "\t   Value: %s" % self[key]['value']
             print "\n"
+            print "\t99) Go Back\n"
             self.validate()
 
             #get input
@@ -383,10 +384,3 @@ class bbqsqlConfig(RequestsConfig):
 
     def _convert_to_query(self,thing):
         pass
-
-
-
-
-
-
-
