@@ -246,6 +246,7 @@ class RequestsConfig:
                 if self[key]['value'] is not None:
                     print "\t   Value: %s" % self[key]['value']
             print "\n"
+            print "99) Go back to the main menu"
             self.validate()
 
             #get input
