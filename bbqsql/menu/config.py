@@ -269,12 +269,15 @@ class RequestsConfig:
                 print "Description  : %s" % desc
                 self.validate()
                 print "\nPlease enter a new value for %s.\n" % key
-                value = raw_input('value: ')
                 try:
-                    value = eval(value)
-                except:
+                        value = raw_input('value: ')
+                        try:
+                            value = eval(value)
+                        except:
+                            pass
+                        self[key]['value'] = value 
+                except KeyboardInterrupt:
                     pass
-                self[key]['value'] = value 
             
         if choice in ['exit','quit']:
             bbqcore.ExitBBQ(0)
