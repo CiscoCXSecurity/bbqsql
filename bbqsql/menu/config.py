@@ -247,7 +247,6 @@ class RequestsConfig:
                     print "\t   Value: %s" % self[key]['value']
             print "\n\t99) Go back to the main menu"
             print "\n"
-            print "\t99) Go Back\n"
             self.validate()
 
             #get input
