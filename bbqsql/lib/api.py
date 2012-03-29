@@ -101,7 +101,7 @@ class BlindSQLi:
         opp_cmp = settings.OPPOSITE_COMPARATORS[query.get_option('comparator')]
 
         #set all the indicies back to 0
-        self.query.set_option('char_index','0')
+        self.query.set_option('char_index','1')
         self.query.set_option('row_index','0')
 
         #setup some base values

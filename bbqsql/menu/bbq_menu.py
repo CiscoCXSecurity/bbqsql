@@ -44,7 +44,6 @@ class bbqMenu:
                 
                 if choice == '5' and valid:
                     requests_config.convert_to_query()
-                    bbqsql_config.convert_to_query()
 
                     # combine them into one dictionary
                     attack_config = {}

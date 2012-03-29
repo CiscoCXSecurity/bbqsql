@@ -1,5 +1,6 @@
 from .query import Query
 from .exceptions import *
+import settings
 
 from requests import async
 from copy import copy
@@ -67,6 +68,8 @@ class Requester(object):
             new_request.__dict__[elt].set_options(opts)
             new_request.__dict__[elt] = new_request.__dict__[elt].render()
         
+        if not settings.QUIET and not settings.PRETTY_PRINT: print new_request.full_url
+
         #send request. handle errors
         if not new_request.send():
             raise SendRequestFailed("looks like you have a problem")
