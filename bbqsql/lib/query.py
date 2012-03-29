@@ -96,7 +96,7 @@ class Query(object):
         return output
     
     def __repr__(self):
-        return selt.q_string
+        return self.q_string
     
     def __str__(self):
         return self.__repr__()

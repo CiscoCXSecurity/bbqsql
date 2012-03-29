@@ -314,14 +314,14 @@ class BooleanBlindTechnique:
             gevent.sleep(.3)
 
     def _run(self):
-        kg_gl = gevent.spawn(self._keep_going)
-        ar_gl = gevent.spawn(self._add_rows)
-        arl_gl = gevent.spawn(self._adjust_row_lengths)
+        self.kg_gl = gevent.spawn(self._keep_going)
+        self.ar_gl = gevent.spawn(self._add_rows)
+        self.arl_gl = gevent.spawn(self._adjust_row_lengths)
 
-        kg_gl.join()
-        ar_gl.join()
-        arl_gl.join()
-
+        self.kg_gl.join()
+        self.ar_gl.join()
+        self.arl_gl.join()
+    
         self.character_pool.join()
         gevent.killall(self.request_makers)
         gevent.joinall(self.request_makers)

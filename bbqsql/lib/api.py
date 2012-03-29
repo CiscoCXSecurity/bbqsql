@@ -85,12 +85,12 @@ class BlindSQLi:
         # Error handling... YAY \0/
         if type(query) != Query:
             print "Query object must be sent to bbqSQL. I received a %s" % str(type(query))
-            exit()
+            quit()
         try:
             requester_type = settings.response_attributes[comparison_attr]
         except KeyError:
             print "You tried to use a comparison_attr that isn't supported. Check the docs for a list"
-            exit()
+            quit()
         self.query = query
 
         #build a Requester object. You can pass this any args that you would pass to requests.Request
@@ -99,6 +99,10 @@ class BlindSQLi:
         #the queries default options should evaluate to True in whatever application we are testing. If we flip the comparator it should evauluate to false. 
         #here, we figure out what the opposite comparator is.
         opp_cmp = settings.OPPOSITE_COMPARATORS[query.get_option('comparator')]
+
+        #set all the indicies back to 0
+        self.query.set_option('char_index','0')
+        self.query.set_option('row_index','0')
 
         #setup some base values
         #true
@@ -154,6 +158,6 @@ class BlindSQLi:
 
             return results 
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt:            
             print "stopping attack"
             return []

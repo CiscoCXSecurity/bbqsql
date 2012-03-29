@@ -1,12 +1,15 @@
+import bbqsql
 from bbqsql import Query
 
 import bbqcore
 from bbqcore import bcolors
 
 from urlparse import urlparse
+from urllib import quote
 import socket
 import os
 import text
+import re
 
 class ConfigError(Exception):
     '''Throw this exception when a method that hasn't been implemented gets called'''
@@ -21,10 +24,14 @@ def validate_allow_redirects(thing):
             thing['value'] = False
         else:
             thing['value'] = True
+    
+    return True
 
 def validate_ath(thing):
     if not (len(thing['value'])==2 and (type(thing['value'][0])==str or type(thing['value'][0])==Query) and (type(thing['value'][1])==str or type(thing['value'][1])==Query)):
         raise ConfigError("auth should be a tuple of two strings. Eg. ('username','password')")
+
+    return True
 
 def validate_cookies(thing):
     if type(thing['value']) == str:
@@ -40,6 +47,8 @@ def validate_cookies(thing):
     for k in thing['value']:
         if (type(k) != str and type(k) != Query)  or (type(thing['value'][k]) != str and (thing['value'][k]) != Query):
             raise ConfigError("Keys and values for cookies need to be strings.")
+    
+    return True
 
 def validate_headers(thing):
     if type(thing['value']) == str:
@@ -52,12 +61,16 @@ def validate_headers(thing):
     for k in thing['value']:
         if (type(k) != str and type(k) != Query)  or (type(thing['value'][k]) != str and (thing['value'][k]) != Query):
             raise ConfigError("Keys and values for headers need to be strings.")
+    
+    return True
 
 def validate_data(thing):
     if type(thing['value']) == dict:
         for k in thing['value']:
             if (type(k) != str and type(k) != Query) or (type(thing["value"][k]) != str and type(thing["value"][k]) != Query):
                 raise ConfigError('You provided your data as a dict. The keys and values need to be strings')
+    
+    return True
 
 def validate_files(thing):
     if type(thing['value']) == str:
@@ -71,26 +84,35 @@ def validate_files(thing):
     for k in thing['value']:
         if type(thing['value'][k]) != file:
             raise ConfigError("You have a non-file object in the file parameter.")
+    
+    return True
 
 def validate_method(thing):
     if thing['value'].lower() not in ['get','options','head','post','put','patch','delete']:
         raise ConfigError("The valid options for method are: ['get','options','head','post','put','patch','delete']")
+
+    return True
 
 def validate_params(thing):
     if type(thing['value']) == dict:
         for k in thing['value']:
             if (type(k) != str and type(k) != Query) or (type(thing['value'][k]) != str and type(thing['value'][k]) != Query):
                 raise ConfigError("You provided params as a dict. Keys are values for this dict must be strings.")
+    
+    return True
 
 def validate_url(thing):
-    parsed_url = urlparse(thing['value'])
+
+    parsed_url = urlparse(str(thing['value']))
+    netloc = parsed_url.netloc.split(':')[0]
     try:
-        socket.gethostbyname(parsed_url.netloc)
+        socket.gethostbyname(netloc)
     except socket.error:
         raise ConfigError('Invalid host name. Cannot resolve.')
     if parsed_url.scheme.lower() not in ['http','https']:
         raise ConfigError('Invalid url scheme. Only http and https')
-    return thing
+    
+    return True
 
 class RequestsConfig:
     config = {\
@@ -152,7 +174,7 @@ class RequestsConfig:
             'validator':None},\
         'url':\
             {'name':'url',\
-            'value':None,\
+            'value':'http://127.0.0.1:8090/boolean?${injection}',\
             'description':'The URL that requests should be sent to.',\
             'types':[str,Query],\
             'required':True,\
@@ -160,16 +182,38 @@ class RequestsConfig:
 
     menu_text = "We need to determine what our HTTP request will look like. Bellow are the\navailable HTTP parameters. Please enter the number of the parameter you\nwould like to edit. When you are done setting up the HTTP parameters,\nyou can type 'done' to keep going.\n"
 
+    def convert_to_query(self):
+        '''Convert a string or dict to Query if it matches the necessary syntax.'''
+        for key in self.config:
+            thing = self.config[key]
+            if type(thing['value']) == str and re.match(u'.*\$\{.+\}.*',thing['value']):
+                thing['value'] = Query(thing['value'])
+            
+            elif type(thing['value']) == dict:
+                for key in thing['value']:
+                    if re.match(u'\$\{.+\}',key):
+                        thing['value'][Query(key)] = thing['value'][key]
+                        del(thing['value'][key])
+                    if re.match(u'\$\{.+\}',thing['value'][key]):
+                        thing['value'][key] = Quote(thing['value'][key])
+
+
     def validate(self,quiet=False):
+        ''' Check if all the config parameters are properly set'''
         valid = True
         for key in self.config:
+            # if there is not value and a value is required, we have a problem
             if self.config[key]['value'] == None:
                 if self.config[key]['required']:
                     valid = False
                     if not quiet: print bcolors.RED + ("You must specify a value for '%s'" % key) + bcolors.ENDC
+                
+            # if we have an object of the wrong type, we have a problem
             elif type(self.config[key]['value']) not in self.config[key]['types']:
                 valid = False
                 if not quiet: print bcolors.RED + ("You gave a value of an illeage type for '%s'" % key )+ bcolors.ENDC
+            
+            # if the config keys validator fails, we have a problem
             elif self.config[key]['validator']:
                 try:
                     self.config[key]['validator'](self.config[key])
@@ -179,17 +223,17 @@ class RequestsConfig:
         return valid
     
     def get_config(self):
+        '''Return a dict of all the set config parameters'''
         # make sure we're on the up and up
-        if not self.validate(): return False
-
         kwargs = {}
         for key in self.config:
-            if self.config[key]['value'] != None and type(self.config[key]['value']) in self.config[key]['types'] and (self.config[key]['validator'] == None or self.config[key]['validator'](self.config[key]['value'])):
+            if self.config[key]['value'] != None and type(self.config[key]['value']) in self.config[key]['types'] and (self.config[key]['validator'] == None or self.config[key]['validator'](self.config[key])):
                 kwargs[key] = self.config[key]['value']
         
         return kwargs
     
     def run_config(self):
+        '''run a configuration menu'''
         config_keys = self.config.keys()
         choice = ''
         while choice not in ['done','back','quit','exit',99,'99']:
@@ -278,6 +322,14 @@ def validate_concurrency(thing):
     except ValueError:
         raise ConfigError('You need to give a numeric value for concurrency')
 
+    return True
+
+def validate_comparison_attr(thing):
+    if thing['value'] not in bbqsql.settings.response_attributes:
+        raise ConfigError("You must choose a valid comparison_attr. Valid options include %s" % str(bbqsql.settings.response_attributes.keys()))
+    
+    return True
+
 def validate_search_type(thing):
     if thing['value'] not in ['binary_search','frequency_search']:
         if 'binary' in thing['value']:
@@ -286,9 +338,14 @@ def validate_search_type(thing):
             thing['value'] = 'frequency_search'
         else:
             raise ConfigError('You need to set search_type to either "binary_search" or "frequency_search"')
+        
+    return True
 
 def validate_query(thing):
-    pass
+    if type(thing['value']) != Query:
+        thing['value'] = Query(thing['value'],encoder=quote)
+    
+    return True
 
 
 class bbqsqlConfig(RequestsConfig):
@@ -300,8 +357,15 @@ class bbqsqlConfig(RequestsConfig):
             'types':[str,int],\
             'required':True,\
             'validator':validate_concurrency},\
-        'search_type':\
-            {'name':'search_type',\
+        'comparison_attr':\
+            {'name':'comparison_attr',\
+            'value':'size',\
+            'description':"Which attribute of the http response bbqsql should look at to determine true/false. Valid options include %s" % str(bbqsql.settings.response_attributes.keys()),\
+            'types':[str],\
+            'required':True,\
+            'validator':validate_comparison_attr},\
+        'technique':\
+            {'name':'technique',\
             'value':'binary_search',\
             'description':'Determines the method for searching. Can either do a binary search algorithm or a character frequency based search algorithm. You probably want to use binary. The allowed values for this are "binary_search" or "frequency_search".',\
             'types':[str],\
@@ -309,7 +373,7 @@ class bbqsqlConfig(RequestsConfig):
             'validator':validate_search_type},\
         'query':\
             {'name':'query',\
-            'value':None,\
+            'value':"row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}",\
             'description':text.query_text,\
             'types':[str,Query],\
             'required':True,\
@@ -317,7 +381,8 @@ class bbqsqlConfig(RequestsConfig):
 
     menu_text = "Please specify the following configuration parameters.\n"
 
-
+    def _convert_to_query(self,thing):
+        pass
 
 
 

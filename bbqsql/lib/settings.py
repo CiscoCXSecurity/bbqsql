@@ -68,5 +68,5 @@ diagraphs_python = {' ': [' ', 't', 's', 'i', 'a', '=', 'd', 'f', 'r', 'c', "'",
 characters_by_freq_python = [' ', 'e', 't', 's', 'a', 'r', 'o', 'i', 'n', 'l', '\n', 'd', 'f', 'u', 'c', 'm', 'p', '_', '.', "'", '(', ')', ',', 'h', 'g', '"', '=', ':', 'y', 'b', 'v', 'w', '#', 'E', 'x', 'k', 'T', '/', '0', '1', 'S', 'j', 'R', '-', '2', 'N', 'q', 'I', 'A', '%', ']', '[', 'C', 'O', 'F', '>', 'L', '<', 'D', 'M', 'P', 'G', '3', '{', '}', 'U', '4', '`', 'z', '*', '\\', 'H', '5', 'B', '6', '8', 'V', 'W', '+', '7', '9', 'K', '|', 'Y', ';', '&', 'J', '@', '?', 'X', 'Q', '!', '^', 'Z', '$', '~']
 
 
-diagraphs = diagraphs_python
-characters_by_freq = characters_by_freq_python
+diagraphs = diagraphs_english_no_nl
+characters_by_freq = characters_by_freq_english_no_nl
