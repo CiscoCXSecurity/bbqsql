@@ -44,16 +44,19 @@ class bbqMenu:
                 
                 if choice == '5' and valid:
                     requests_config.convert_to_query()
-
+                    
                     # combine them into one dictionary
                     attack_config = {}
                     attack_config.update(requests_config.get_config())
                     attack_config.update(bbqsql_config.get_config())
-
                     # launch attack
                     bbq = bbqsql.BlindSQLi(**attack_config)
                     results = bbq.run()
-            
+                    del(bbq)
+                    del(results)
+                    results = None
+
+
             bbqcore.ExitBBQ(0)
             
         # ## handle keyboard interrupts

@@ -74,12 +74,15 @@ class Requester(object):
         if not new_request.send():
             raise SendRequestFailed("looks like you have a problem")
 
+        #print new_request.response.text
+
         #see if the response was 'true'
         if case is None:
             case = self._test(new_request.response)
             rval = self.cases[case]['rval']
 
         self._process_response(case,rval,new_request.response)
+            
 
         return self.cases[case]['rval']
 
@@ -134,7 +137,9 @@ class LooseNumericRequester(Requester):
                 if self.cases[inner]['rval'] != self.cases[outer]['rval']:
                     mean_stddev = mean((self.cases[inner]['stddev'],self.cases[outer]['stddev']))
                     diff = abs(self.cases[inner]['mean'] - self.cases[outer]['mean'])
-                    if diff < mean_stddev*2: raise TrueFalseRangeOverlap("truth and falsity overlap")
+                    if diff < mean_stddev*2: 
+                        print self.cases
+                        raise TrueFalseRangeOverlap("truth and falsity overlap")
 
     def _test(self,response):
         '''test a value'''

@@ -156,7 +156,7 @@ class BlindSQLi:
             if not settings.QUIET and not settings.PRETTY_PRINT:
                 print results
 
-            return results 
+            return results
 
         except KeyboardInterrupt:            
             print "stopping attack"

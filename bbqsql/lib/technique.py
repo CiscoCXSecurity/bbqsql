@@ -55,7 +55,6 @@ class BlindCharacter(object):
         low = 0
         high = CHARSET_LEN
         self.working = True        
-
         #binary search unless we hit an error
         while not self.error and self.working:
             mid = (low+high)//2
@@ -166,8 +165,6 @@ class BooleanBlindTechnique:
         self.str_results = []
         #character generators take care of building the Character objects. we need one per row
         self.char_gens = []
-        #make a row_generator
-        self.row_gen = self._row_generator()
         #a queue for communications between Character()s and request_makers
         self.q = Queue()
         #"threads" that run the Character()s
@@ -176,6 +173,8 @@ class BooleanBlindTechnique:
         self.request_makers = [gevent.spawn(self._request_maker) for i in range(self.concurrency)]
         #fire this event when shutting down
         self.shutting_down = Event()
+        #do we need to add more rows?
+        self.need_more_rows = True
         #use this as a lock to know when not to mess with self.results        
         self.results_lock = Semaphore(1)
         #request_count is the number of requests made on the current run
@@ -216,24 +215,13 @@ class BooleanBlindTechnique:
 
             char_asyncresult.set(response)
 
-    def _row_generator(self):
-        '''
-        Icrease rows. mostly useful because it keeps track of row_index
-        '''
-        row_index = 0
-        while True:
-            self.char_gens.append(self._character_generator(row_index))
-            self.results.append([])
-            yield True
-            row_index += 1
-
     def _character_generator(self,row_index):
         '''
         creates a Character object for us. this generator is useful just because it keeps track of the char_index
         '''
         char_index = 1
         row_die_event = AsyncResult()
-        while True:
+        while not self.shutting_down.is_set():
             c = BlindCharacter(\
                 row_index   = row_index,\
                 char_index  = char_index,\
@@ -279,15 +267,21 @@ class BooleanBlindTechnique:
         else:
             rows_to_work_on = self.concurrency
         rows_to_work_on = [rows_to_work_on,1][rows_to_work_on == 0]
-        while not self.shutting_down.is_set():
-            # add rows until we realize that we are at the end of rows
-            if len(self.results) and filter(lambda row: len(row) and row[0] == 'error',self.results):
-                break
-            
+
+        row_index = 0
+
+        # keep adding new rows until we dont need any more
+        while self.need_more_rows:
             working_rows = len(filter(lambda row: 'working' in row,self.results))
-            [self.row_gen.next() for row in range(rows_to_work_on - working_rows)]
+            for row in range(rows_to_work_on - working_rows):
+                self.char_gens.append(self._character_generator(row_index))
+                self.results.append([])
+                row_index += 1
+
             gevent.sleep(.3)
+            self.need_more_rows = not(len(self.results) and filter(lambda row: len(row) and row[0] == 'error',self.results))
         
+        # delete any extra rows.
         while not self.shutting_down.is_set():
             self.results_lock.acquire()
             # delete any rows that shouldn't have been added in the first place
@@ -307,11 +301,16 @@ class BooleanBlindTechnique:
         '''
         Look at the results gathered so far and determine if we should keep going. we want to keep going until we have an empty row
         '''
-        while not self.shutting_down.is_set():
-            r = filter(lambda row:'error' not in row or 'working' in row[:row.index('error')],self.results)
-            if self.results and not r:
-                self.shutting_down.set()
-            gevent.sleep(.3)
+        # chill out until we don't need any more rows
+        while self.need_more_rows:
+            gevent.sleep(1)
+
+        # chill out untill all the rows have finished working
+        while filter(lambda row:'error' not in row or 'working' in row[:row.index('error')],self.results):
+            gevent.sleep(.5)
+        
+        # call it quits
+        self.shutting_down.set()
 
     def _run(self):
         self.kg_gl = gevent.spawn(self._keep_going)
@@ -333,9 +332,6 @@ class BooleanBlindTechnique:
             :row_len        An estimated starting point for the length of rows. This will get adjusted as the attack goes on.
         '''
         self.run_start_time = time()
-
-        if self.rungl != None:
-            self.rungl.kill()
 
         self.row_len = row_len
         self.concurrency = concurrency
@@ -490,7 +486,11 @@ class FrequencyTechnique(BooleanBlindTechnique):
                 break
             
             working_rows = len(filter(lambda row: 'working' in row,self.results))
-            [self.row_gen.next() for row in range(self.concurrency - working_rows)]
+            for row in range(rows_to_work_on - working_rows):
+                self.char_gens.append(self._character_generator(row_index))
+                self.results.append([])
+                row_index += 1
+                
             gevent.sleep(.3)
         
         while not self.shutting_down.is_set():
