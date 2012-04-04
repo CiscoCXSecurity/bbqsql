@@ -6,6 +6,7 @@ from bbqcore import bcolors
 
 from urlparse import urlparse
 from urllib import quote
+import readline
 import socket
 import os
 import text
@@ -356,7 +357,7 @@ class bbqsqlConfig(RequestsConfig):
     config = {\
         'concurrency':\
             {'name':'concurrency',\
-            'value':75,\
+            'value':150,\
             'description':'Controls the amount of concurrency to run the attack with. This is useful for throttling the requests',\
             'types':[str,int],\
             'required':True,\

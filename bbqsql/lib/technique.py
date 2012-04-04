@@ -366,7 +366,6 @@ class BooleanBlindTechnique:
 
         #return filter(lambda row: row != '',[''.join([COLORS[x.get_status()] + str(x) + COLORS['endc'] for x in row]) for row in self.results])        
 
-
     def get_status(self):
         status = ""
         status += "requests: %d\t" % self.request_count
@@ -490,7 +489,7 @@ class FrequencyTechnique(BooleanBlindTechnique):
                 self.char_gens.append(self._character_generator(row_index))
                 self.results.append([])
                 row_index += 1
-                
+
             gevent.sleep(.3)
         
         while not self.shutting_down.is_set():

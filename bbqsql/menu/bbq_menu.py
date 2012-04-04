@@ -1,6 +1,7 @@
 import bbqsql
 
 import bbqcore
+import readline
 from bbqcore import bcolors
 from config import RequestsConfig,bbqsqlConfig
 
