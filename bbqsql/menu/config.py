@@ -4,9 +4,13 @@ from bbqsql import Query
 import bbqcore
 from bbqcore import bcolors
 
+try:
+    import readline
+except ImportError:
+    pass
+
 from urlparse import urlparse
 from urllib import quote
-import readline
 import socket
 import os
 import text

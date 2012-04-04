@@ -479,18 +479,17 @@ class FrequencyTechnique(BooleanBlindTechnique):
         '''
         look at how many gevent "threads" are being used and add more rows to correct this
         '''
-        while not self.shutting_down.is_set():
+        row_index = 0
+        while self.need_more_rows:
             # add rows until we realize that we are at the end of rows
-            if len(self.results) and filter(lambda row: len(row) and row[0] == 'error',self.results):
-                break
-            
             working_rows = len(filter(lambda row: 'working' in row,self.results))
-            for row in range(rows_to_work_on - working_rows):
+            for row in range(self.concurrency - working_rows):
                 self.char_gens.append(self._character_generator(row_index))
                 self.results.append([])
                 row_index += 1
 
             gevent.sleep(.3)
+            self.need_more_rows = not(len(self.results) and filter(lambda row: len(row) and row[0] == 'error',self.results))
         
         while not self.shutting_down.is_set():
             self.results_lock.acquire()
