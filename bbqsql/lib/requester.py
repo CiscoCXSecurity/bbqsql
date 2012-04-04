@@ -67,8 +67,7 @@ class Requester(object):
                 opts[opt] = value
             new_request.__dict__[elt].set_options(opts)
             new_request.__dict__[elt] = new_request.__dict__[elt].render()
-        
-        if not settings.QUIET and not settings.PRETTY_PRINT: print new_request.full_url
+            if not settings.QUIET and not settings.PRETTY_PRINT: print "{}: {}".format(elt,new_request.__dict__[elt])    
 
         #send request. handle errors
         if not new_request.send():
@@ -82,7 +81,8 @@ class Requester(object):
             rval = self.cases[case]['rval']
 
         self._process_response(case,rval,new_request.response)
-            
+
+        if not settings.QUIET and not settings.PRETTY_PRINT: print "Evaluated as: {}\n".format(self.cases[case]['rval'])
 
         return self.cases[case]['rval']
 

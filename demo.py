@@ -34,7 +34,7 @@ print "dumped db in %f seconds" % (stop-start)
 url     = bbqsql.Query('http://127.0.0.1:8090/boolean?${injection}')
 query   = bbqsql.Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}",encoder=quote)
 
-bh      = bbqsql.BlindSQLi(url=url,query=query,method='GET',comparison_attr='size',technique='frequency_search',concurrency=30)
+bh      = bbqsql.BlindSQLi(url=url,query=query,method='GET',comparison_attr='size',technique='frequency_search',concurrency=3)
 
 start = time()
 results = bh.run()

@@ -112,7 +112,8 @@ class BlindCharacter(object):
     def _test(self,comparator):
         asr = AsyncResult()
         self.q.put(item=(self.row_index,self.char_index,self.char_val,comparator,asr))
-        return asr.get()
+        res = asr.get()
+        return res
 
     def __eq__(self,y):
         if y == "error":
