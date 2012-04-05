@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+import bbqsql
 
-setup(name='bbqSQL',
-      version='1.0',
+setup(name=bbqsql.__title__,
+      version=bbqsql.__version__,
+      author=bbqsql.__author__,
+      license=bbqsql.__license__,
       description='SQL Injcetion Exploitation Tool',
-      author='Ben Toews (mastahyeti)',
-      author_email='mastahyeti@gmail.com',
       url='http://github.com/mastahyeti/bbqsql',
       packages=['bbqsql','bbqsql.lib','bbqsql.menu'],
-      scripts=['scripts/bbqsql']
+      scripts=['scripts/bbqsql'],
+      requires=['gevent','requests','numpy']
      )
-
-      #package_dir={'':'bbqsql'},
