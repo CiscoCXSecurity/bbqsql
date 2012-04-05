@@ -1,8 +1,9 @@
 import bbqsql
-from bbqsql import Query
 
+from bbqsql import Query
 import bbqcore
 from bbqcore import bcolors
+import text
 
 try:
     import readline
@@ -13,7 +14,6 @@ from urlparse import urlparse
 from urllib import quote
 import socket
 import os
-import text
 import re
 
 class ConfigError(Exception):

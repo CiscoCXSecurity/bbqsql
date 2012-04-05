@@ -1,5 +1,8 @@
 import bbqsql
 
+from bbqcore import bcolors
+from config import RequestsConfig,bbqsqlConfig
+import text
 import bbqcore
 
 try:
@@ -7,10 +10,6 @@ try:
 except ImportError:
     pass
 
-from bbqcore import bcolors
-from config import RequestsConfig,bbqsqlConfig
-
-import text
 from copy import copy
 
 
