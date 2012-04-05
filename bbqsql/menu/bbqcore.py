@@ -95,41 +95,19 @@ def bbq_category(category):
             '2':"bool_sqL"
            }.get(category,"ERROR")
 
-def setprompt(category, text):
-
-    # if no special prompt and no text, return plain prompt
-    if category == '0' and text == "":
-        return bcolors.UNDERL + bcolors.DARKCYAN + "bbqsql" + bcolors.ENDC + "> "
-
-    # if the loop is here, either category or text was positive
-    # if it's the category that is blank...return prompt with only the text
-    if category == '0':
-        return bcolors.UNDERL + bcolors.DARKCYAN + "bbqsql" + bcolors.ENDC + "> " + text + ": "
-    # category is NOT blank
-    else:
-        # initialize the base 'set' prompt
-        prompt = bcolors.UNDERL + bcolors.DARKCYAN + "bbqsql" + bcolors.ENDC
-
-        # if there is a category but no text
-        if text == "":
-            for level in category:
-                level = bbq_category(level)
-        #        level = category
-                prompt += ":" + bcolors.UNDERL + bcolors.DARKCYAN + level + bcolors.ENDC
-            promptstring = str(prompt)
-            promptstring += ">"
-            return promptstring
-
-        # if there is both a category AND text
-        else:
-            # iterate through the list recieved
-            for level in category:
-                #level = category
-                level = bbq_category(level)
-                prompt += ":" + bcolors.UNDERL + bcolors.DARKCYAN + level + bcolors.ENDC
-            promptstring = str(prompt)
-            promptstring = promptstring + "> " + text + ": "
-            return promptstring
+def setprompt(category=None, text=None):
+    '''helper function for creating prompt text'''
+    #base of prompt
+    prompt =  bcolors.UNDERL + bcolors.DARKCYAN + "bbqsql"
+    #if they provide a category
+    if category:
+            prompt += ":"+category
+    prompt += ">"
+    #if they provide aditional text
+    if text:
+        prompt += " "+ text + ":"
+    prompt += bcolors.ENDC + " "
+    return prompt
 
 
 class CreateMenu:

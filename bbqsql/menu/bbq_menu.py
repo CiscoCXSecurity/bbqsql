@@ -40,7 +40,7 @@ class bbqMenu:
                 if results: print results
 
                 # mainc ore menu
-                choice = (raw_input(bbqcore.setprompt("0", "")))
+                choice = (raw_input(bbqcore.setprompt()))
 
                 if choice == '1': # Binary Blind SQL Injection Test
                     requests_config.run_config()

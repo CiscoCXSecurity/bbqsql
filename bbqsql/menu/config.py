@@ -187,6 +187,8 @@ class RequestsConfig:
 
     menu_text = "We need to determine what our HTTP request will look like. Bellow are the\navailable HTTP parameters. Please enter the number of the parameter you\nwould like to edit. When you are done setting up the HTTP parameters,\nyou can type 'done' to keep going.\n"
 
+    prompt_text = "http_options"
+
     def convert_to_query(self):
         '''Convert a string or dict to Query if it matches the necessary syntax.'''
         for key in self.config:
@@ -255,7 +257,7 @@ class RequestsConfig:
             self.validate()
 
             #get input
-            choice = (raw_input(bbqcore.setprompt("1", "")))
+            choice = (raw_input(bbqcore.setprompt(self.prompt_text)))
             #convert to int
             try:
                 choice = int(choice)
@@ -275,7 +277,7 @@ class RequestsConfig:
                 self.validate()
                 print "\nPlease enter a new value for %s.\n" % key
                 try:
-                        value = raw_input('value: ')
+                        value = raw_input(bbqcore.setprompt(self.prompt_text,config_keys[choice]))
                         try:
                             value = eval(value)
                         except:
@@ -389,6 +391,7 @@ class bbqsqlConfig(RequestsConfig):
             'validator':validate_query}}
 
     menu_text = "Please specify the following configuration parameters.\n"
+    prompt_text = "attack_options"
 
     def _convert_to_query(self,thing):
         pass
