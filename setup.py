@@ -8,7 +8,8 @@ setup(name='bbqSQL',
       author='Ben Toews (mastahyeti)',
       author_email='mastahyeti@gmail.com',
       url='http://github.com/mastahyeti/bbqsql',
-      packages=['bbqsql','bbqsql.lib','bbqsql.menu']
+      packages=['bbqsql','bbqsql.lib','bbqsql.menu'],
+      scripts=['scripts/bbqsql']
      )
 
       #package_dir={'':'bbqsql'},
