@@ -88,13 +88,6 @@ def show_banner():
     """
     print  bcolors.ENDC + '\n'
 
-def bbq_category(category):
-    return {
-            '0':"0",
-            '1':"blind_sql",
-            '2':"bool_sqL"
-           }.get(category,"ERROR")
-
 def setprompt(category=None, text=None):
     '''helper function for creating prompt text'''
     #base of prompt
