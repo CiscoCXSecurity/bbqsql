@@ -4,7 +4,7 @@
 import bbqsql
 
 import re
-import dictionaries
+import os
 
 # used to grab the true path for current working directory
 class bcolors:
@@ -53,7 +53,7 @@ class bcolors:
 #
 def ExitBBQ(exitcode=0):
     print "\n"*100
-    print "\n\n Goodbye, and enjoy a hot plate of ribs on the house.\n"
+    print "\n\n Goodbye " + bcolors.RED + os.getlogin() + bcolors.ENDC+",  and enjoy a hot plate of ribs on the house.\n"
     quit()
 
 def show_graphics():
@@ -87,6 +87,14 @@ def show_banner():
     a tasty resturant for all of your injection fun..
     """
     print  bcolors.ENDC + '\n'
+
+def bbq_category(category):
+    return {
+            '0':"0",
+            '1':"blind_sql",
+            '2':"bool_sqL"
+           }.get(category,"ERROR")
+
 def setprompt(category, text):
 
     # if no special prompt and no text, return plain prompt
@@ -105,7 +113,7 @@ def setprompt(category, text):
         # if there is a category but no text
         if text == "":
             for level in category:
-                level = dictionaries.category(level)
+                level = bbq_category(level)
         #        level = category
                 prompt += ":" + bcolors.UNDERL + bcolors.DARKCYAN + level + bcolors.ENDC
             promptstring = str(prompt)
@@ -117,7 +125,7 @@ def setprompt(category, text):
             # iterate through the list recieved
             for level in category:
                 #level = category
-                level = dictionaries.category(level)
+                level = bbq_category(level)
                 prompt += ":" + bcolors.UNDERL + bcolors.DARKCYAN + level + bcolors.ENDC
             promptstring = str(prompt)
             promptstring = promptstring + "> " + text + ": "
