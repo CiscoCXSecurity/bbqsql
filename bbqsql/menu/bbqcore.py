@@ -4,21 +4,9 @@
 import bbqsql
 
 import re
-import sys
-import socket
-import subprocess
-import shutil
-import os
-import time
-import datetime
-import random
-import string
 import dictionaries
-import yaml
-import pwd
 
 # used to grab the true path for current working directory
-definepath = os.getcwd()
 class bcolors:
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
@@ -64,9 +52,9 @@ class bcolors:
 # Class for colors
 #
 def ExitBBQ(exitcode=0):
-    os.system('clear')
-    print "\n\n Goodbye " + bcolors.RED + pwd.getpwuid(os.getuid()).pw_name + bcolors.ENDC+",  and enjoy a hot plate of ribs on the house.\n"
-    sys.exit(exitcode)
+    print "\n"*100
+    print "\n\n Goodbye, and enjoy a hot plate of ribs on the house.\n"
+    quit()
 
 def show_graphics():
     print bcolors.YELLOW + r"""
@@ -86,9 +74,7 @@ def show_graphics():
     return
 
 def show_banner():
-    os.system("clear")
-
-
+    print "\n"*100
     show_graphics()
     print bcolors.BLUE + """
   [---]        bbqsql injection toolkit ("""+bcolors.YELLOW+"""bbqsql"""+bcolors.BLUE+""")         
