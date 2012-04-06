@@ -77,12 +77,13 @@ def show_banner():
     print "\n"*100
     show_graphics()
     print bcolors.BLUE + """
-    [---]        bbqsql injection toolkit ("""+bcolors.YELLOW+"""bbqsql"""+bcolors.BLUE+""")         
-    [---]        Lead Development: """ + bcolors.RED+"""Ben Toews"""+bcolors.BLUE+"""("""+bcolors.YELLOW+"""mastahyeti"""+bcolors.BLUE+""")         
-    [---]        Development: """ + bcolors.RED+"""Scott Behrens"""+bcolors.BLUE+"""("""+bcolors.YELLOW+"""arbit"""+bcolors.BLUE+""")         
-    [---]        Menu modified from code for Social Engineering Toolkit (SET) by: """ + bcolors.RED+""" David Kennedy """+bcolors.BLUE+"""("""+bcolors.YELLOW+"""ReL1K"""+bcolors.BLUE+""")    
-    [---]        SET is located at: """ + bcolors.RED+""" http://www.secmaniac.com"""+bcolors.BLUE+"""("""+bcolors.YELLOW+"""SET"""+bcolors.BLUE+""")    
-    [---]        Version: """+bcolors.RED+"""%s""" % (bbqsql.__version__) +bcolors.BLUE+"""               
+    bbqsql injection toolkit ("""+bcolors.YELLOW+"""bbqsql"""+bcolors.BLUE+""")         
+    Lead Development: """ + bcolors.RED+"""Ben Toews"""+bcolors.BLUE+"""("""+bcolors.YELLOW+"""mastahyeti"""+bcolors.BLUE+""")         
+    Development: """ + bcolors.RED+"""Scott Behrens"""+bcolors.BLUE+"""("""+bcolors.YELLOW+"""arbit"""+bcolors.BLUE+""")         
+    Menu modified from code for Social Engineering Toolkit (SET) by: """ + bcolors.RED+""" David Kennedy """+bcolors.BLUE+"""("""+bcolors.YELLOW+"""ReL1K"""+bcolors.BLUE+""")    
+    SET is located at: """ + bcolors.RED+""" http://www.secmaniac.com"""+bcolors.BLUE+"""("""+bcolors.YELLOW+"""SET"""+bcolors.BLUE+""")    
+    Version: """+bcolors.RED+"""%s""" % (bbqsql.__version__) +bcolors.BLUE+"""               
+    
   """ + bcolors.GREEN+"""  Welcome to bbqsql. 
     a tasty resturant for all of your injection fun..
     """

@@ -12,7 +12,7 @@ main_menu = ['Setup HTTP Parameters',
 	     'Setup BBQSQL Options',
          'Export Config (not implemented)',
          'Import Config (not implemented)',
-	     'Run Exploit (not implemented)',
+	     'Run Exploit',
 	     'Help, Credits, and About (not implemented)']	     
 
 
@@ -47,7 +47,6 @@ from the subselect to validate the result
 """ + bcolors.BOLD + """${sleep}""" + bcolors.ENDC + """ = This is optional but tells bbqsql where to insert
  the number of seconds to sleep when performing time based sql 
  injection
-
 
 
 """
