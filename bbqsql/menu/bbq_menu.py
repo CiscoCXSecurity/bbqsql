@@ -14,6 +14,8 @@ except ImportError:
 
 from copy import copy
 
+# config params that are only used in the menu and shouldn't be passed along to BlindSQLi or other parts of bbqsql
+exclude_parms = ['csv_output_file']
 
 # main menu
 class bbqMenu:
@@ -88,9 +90,18 @@ class bbqMenu:
                     attack_config = {}
                     attack_config.update(requests_config.get_config())
                     attack_config.update(bbqsql_config.get_config())
+                    #delete unwanted config params before sending the config along
+                    for key in exclude_parms:
+                        if key in attack_config:
+                            del(attack_config[key])
                     # launch attack
                     bbq = bbqsql.BlindSQLi(**attack_config)
                     results = bbq.run()
+                    #output to a file if thats what they're into
+                    if bbqsql_config['csv_output_file']['value'] is not None:
+                        f = open(bbqsql_config['csv_output_file']['value'],'w')
+                        f.write("\n".join(results))
+                        f.close()
                     # delete stuff
                     del(bbq)
 
