@@ -3,7 +3,6 @@ import bbqsql
 import bbqcore
 from bbqcore import bcolors
 import text
-import time
 try:
     import readline
 except ImportError:
@@ -177,7 +176,8 @@ class RequestsConfig:
             'validator':None},\
         'url':\
             {'name':'url',\
-            'value':'http://sqlivuln/sqlivuln/index.php?username=user1&password=secret${injection}',\
+            'value':'http://www.google.com',\
+            #'value':'http://sqlivuln/sqlivuln/index.php?username=user1&password=secret${injection}',\
             'description':'The URL that requests should be sent to.',\
             'types':[str],\
             'required':True,\
@@ -225,7 +225,8 @@ class RequestsConfig:
         '''take a dict of all the config parameters and apply it to the config object'''
         for key in config:
             if key in self.config:
-                self.config[key] = config[key]
+                self.config[key]['value'] = config[key]
+        print config
         self.validate()
     
     def run_config(self):
