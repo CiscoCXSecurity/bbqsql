@@ -358,6 +358,13 @@ class bbqsqlConfig(RequestsConfig):
             'types':[str,int],\
             'required':True,\
             'validator':validate_concurrency},\
+        'csv_output_file':\
+            {'name':'csv_output_file',\
+            'value':None,\
+            'description':'The name of a file to output the results to. Leave this blank if you dont want output to a file',\
+            'types':[str],\
+            'required':False,\
+            'validator':None},\
         'comparison_attr':\
             {'name':'comparison_attr',\
             'value':'size',\
