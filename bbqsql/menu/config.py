@@ -3,7 +3,7 @@ import bbqsql
 import bbqcore
 from bbqcore import bcolors
 import text
-
+import time
 try:
     import readline
 except ImportError:
@@ -225,7 +225,7 @@ class RequestsConfig:
         '''take a dict of all the config parameters and apply it to the config object'''
         for key in config:
             if key in self.config:
-                self.config[key].value = config[key]
+                self.config[key] = config[key]
         self.validate()
     
     def run_config(self):
