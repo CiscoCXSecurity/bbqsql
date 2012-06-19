@@ -4,7 +4,6 @@ from bbqcore import bcolors
 from config import RequestsConfig,bbqsqlConfig
 import text
 import bbqcore
-import time
 from ConfigParser import RawConfigParser
 
 try:
@@ -78,9 +77,8 @@ class bbqMenu:
                     for key,val in attack_config.items('HTTP Config'):
                         tmp_http_config[key] = val
                   
-                    #requests_config.set_config(tmp_req_config)
+                    requests_config.set_config(tmp_req_config)
                     bbqsql_config.set_config(tmp_http_config)
-                    time.sleep(9)
 
                 if choice == '5' and valid:                                    
                     # clear out results
