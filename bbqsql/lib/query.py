@@ -22,10 +22,6 @@ class Query(object):
         There is an optional options parameter that allows you to set the option values manually rather than
         having them be parsed.
         '''
-        print "query: %s" % str(q_string)
-        print "query: %s" % str(options)
-        print "query: %s" % str(encoder)
-        print "\n\n"
         self.encoder = encoder
         self.q_string = q_string
         if options:

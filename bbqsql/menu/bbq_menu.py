@@ -48,6 +48,9 @@ class bbqMenu:
                     bbqsql_config.run_config()
                 
                 if choice == '5' and valid:                                    
+                    # clear out results
+                    results = None
+
                     # combine them into one dictionary
                     attack_config = {}
                     attack_config.update(requests_config.get_config())
@@ -55,8 +58,8 @@ class bbqMenu:
                     # launch attack
                     bbq = bbqsql.BlindSQLi(**attack_config)
                     results = bbq.run()
-                    results = None
-
+                    # delete stuff
+                    del(bbq)
 
             bbqcore.ExitBBQ(0)
             

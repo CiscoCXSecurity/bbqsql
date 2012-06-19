@@ -220,6 +220,13 @@ class RequestsConfig:
                 kwargs[key] = self.config[key]['value']
         
         return kwargs
+
+    def set_config(self,config):
+        '''take a dict of all the config parameters and apply it to the config object'''
+        for key in config:
+            if key in self.config:
+                self.config[key].value = config[key]
+        self.validate()
     
     def run_config(self):
         '''run a configuration menu'''
