@@ -4,6 +4,8 @@ from bbqcore import bcolors
 from config import RequestsConfig,bbqsqlConfig
 import text
 import bbqcore
+import time
+from ConfigParser import RawConfigParser
 
 try:
     import readline
@@ -48,17 +50,36 @@ class bbqMenu:
                     bbqsql_config.run_config()
                 
                 if choice == '3':
-                    attack_config = {}
-                    attack_config.update(requests_config.get_config())
-                    attack_config.update(bbqsql_config.get_config())
-                    # now export attack_config to file
+                    # Export Config
+                    attack_config = RawConfigParser()
+                    attack_config.add_section('Request Config')
+                    attack_config.add_section('HTTP Config')
+                    
+                    for key,val in requests_config.get_config().iteritems():
+                        attack_config.set('Request Config', key, val)
+
+                    for key,val in bbqsql_config.get_config().iteritems():
+                        attack_config.set('HTTP Config', key, val)
+
+                    with open('attack.cfg', 'wb') as configfile:
+                        attack_config.write(configfile)
 
                 if choice == '4':
                     #somehow populate this VVV tmp_config dict with stuff from file
-                    tmp_config = dict()
-                    bbqsql_config.set_config(tmp_config)
-                    requests_config.set_config(tmp_config)
-                
+                    tmp_req_config = dict()
+                    tmp_http_config = dict()
+                    attack_config = RawConfigParser()
+                    attack_config.read('attack.cfg')
+            
+                    for key,val in attack_config.items('Request Config'):
+                        tmp_req_config[key] = val
+                    for key,val in attack_config.items('HTTP Config'):
+                        tmp_http_config[key] = val
+                  
+                    #requests_config.set_config(tmp_req_config)
+                    bbqsql_config.set_config(tmp_http_config)
+                    time.sleep(9)
+
                 if choice == '5' and valid:                                    
                     # clear out results
                     results = None
