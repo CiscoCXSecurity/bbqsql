@@ -47,6 +47,18 @@ class bbqMenu:
                 if choice == '2':
                     bbqsql_config.run_config()
                 
+                if choice == '3':
+                    attack_config = {}
+                    attack_config.update(requests_config.get_config())
+                    attack_config.update(bbqsql_config.get_config())
+                    # now export attack_config to file
+
+                if choice == '4':
+                    #somehow populate this VVV tmp_config dict with stuff from file
+                    tmp_config = dict()
+                    bbqsql_config.set_config(tmp_config)
+                    requests_config.set_config(tmp_config)
+                
                 if choice == '5' and valid:                                    
                     # clear out results
                     results = None
