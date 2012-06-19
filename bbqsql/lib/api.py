@@ -5,6 +5,7 @@ import settings
 
 from urllib import quote
 from traceback import print_exc
+import re
 
 __all__ = ['Query','BlindSQLi']
 
@@ -15,10 +16,10 @@ class BlindSQLi:
     This object allows you to do a blind sql injection attack. 
     '''
     def __init__(self,\
-        query               = Query("row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:0}",encoder=quote),\
+        query               = "row_index=${row_index:1}&character_index=${char_index:1}&character_value=${char_val:0}&comparator=${comparator:>}&sleep=${sleep:0}",\
         comparison_attr     = "size",
         technique           = "binary_search",\
-        concurrency         = 50, *args,**kwargs):
+        concurrency         = 50,**kwargs):
         '''
         Initialize the BlindSQLi with query, comparison_attr, technique, and any Requests
         parameters you would like (url,method,headers,cookies). For more details on these,
@@ -82,23 +83,36 @@ class BlindSQLi:
         except KeyError:
             raise Exception("You are trying to use the %s technique, which is not a valid technique. Your options are %s" % (technique,repr(techniques.keys())))
 
-        # Error handling... YAY \0/
-        if type(query) != Query:
-            print "Query object must be sent to bbqSQL. I received a %s" % str(type(query))
-            quit()
         try:
             requester_type = settings.response_attributes[comparison_attr]
         except KeyError:
             print "You tried to use a comparison_attr that isn't supported. Check the docs for a list"
             quit()
-        self.query = query
+
+        # convert query string to Query
+        self.query = Query(query)
+
+        # Convert a string or dict to Query if it matches the necessary syntax.
+        for key in kwargs:
+            if type(kwargs[key]) == str and re.match(u'.*\$\{.+\}.*',kwargs[key]):
+                kwargs[key] = Query(kwargs[key],encoder=quote)
+            
+            elif type(kwargs[key]) == dict:
+                for k in kwargs[key]:
+                    if type(k) == str and re.match(u'\$\{.+\}',k):
+                        kwargs[key][Query(k,encoder=quote)] = kwargs[key][k]
+                        del(kwargs[key][k])
+                    if type(kwargs[key][k]) == str and re.match(u'\$\{.+\}',kwargs[key][k]):
+                        kwargs[key][k] = Quote(kwargs[key][k],encoder=quote)
+
+        print kwargs
 
         #build a Requester object. You can pass this any args that you would pass to requests.Request
-        self.requester = requester_type(comparison_attr=comparison_attr, *args, **kwargs)
+        self.requester = requester_type(comparison_attr=comparison_attr, **kwargs)
 
         #the queries default options should evaluate to True in whatever application we are testing. If we flip the comparator it should evauluate to false. 
         #here, we figure out what the opposite comparator is.
-        opp_cmp = settings.OPPOSITE_COMPARATORS[query.get_option('comparator')]
+        opp_cmp = settings.OPPOSITE_COMPARATORS[self.query.get_option('comparator')]
 
         #set all the indicies back to 0
         self.query.set_option('char_index','1')
@@ -107,17 +121,17 @@ class BlindSQLi:
         #setup some base values
         #true
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=query.render(),case='true',rval=True)
+            self.requester.make_request(value=self.query.render(),case='true',rval=True)
 
         #false
         self.query.set_option('comparator',opp_cmp)
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=query.render(),case='false',rval=False)
+            self.requester.make_request(value=self.query.render(),case='false',rval=False)
 
         #error
         self.query.set_option('char_index','1000')
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=query.render(),case='error',rval=False)
+            self.requester.make_request(value=self.query.render(),case='error',rval=False)
 
         if not settings.QUIET: print "done setting up BooleanBlindSQLi"
 
@@ -125,6 +139,10 @@ class BlindSQLi:
         '''
         Run the BlindSQLi attack, returning the retreived results.
         '''
+        
+        # DEBUGGING
+        print "lib.api.BlindSQLi.run"
+
         try:
             #build our technique
             if not settings.QUIET and not settings.PRETTY_PRINT: print "setting up technique"

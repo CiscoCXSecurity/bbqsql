@@ -1,6 +1,5 @@
 import bbqsql
 
-from bbqsql import Query
 import bbqcore
 from bbqcore import bcolors
 import text
@@ -14,7 +13,6 @@ from urlparse import urlparse
 from urllib import quote
 import socket
 import os
-import re
 
 class ConfigError(Exception):
     '''Throw this exception when a method that hasn't been implemented gets called'''
@@ -33,7 +31,7 @@ def validate_allow_redirects(thing):
     return True
 
 def validate_ath(thing):
-    if not (len(thing['value'])==2 and (type(thing['value'][0])==str or type(thing['value'][0])==Query) and (type(thing['value'][1])==str or type(thing['value'][1])==Query)):
+    if not (len(thing['value'])==2 and type(thing['value'][0])==str and type(thing['value'][1])==str):
         raise ConfigError("auth should be a tuple of two strings. Eg. ('username','password')")
 
     return True
@@ -50,7 +48,7 @@ def validate_cookies(thing):
         except:
             raise ConfigError("You provided your cookies as a string. Thats okay, but it doesn't look like you formatted them properly")
     for k in thing['value']:
-        if (type(k) != str and type(k) != Query)  or (type(thing['value'][k]) != str and (thing['value'][k]) != Query):
+        if type(k) != str  or type(thing['value'][k]) != str:
             raise ConfigError("Keys and values for cookies need to be strings.")
     
     return True
@@ -64,7 +62,7 @@ def validate_headers(thing):
         except:
             raise ConfigError("You provided your headers as a string. Thats okay, but it doesn't look like you formatted them properly")
     for k in thing['value']:
-        if (type(k) != str and type(k) != Query)  or (type(thing['value'][k]) != str and (thing['value'][k]) != Query):
+        if type(k) != str  or type(thing['value'][k]) != str:
             raise ConfigError("Keys and values for headers need to be strings.")
     
     return True
@@ -72,7 +70,7 @@ def validate_headers(thing):
 def validate_data(thing):
     if type(thing['value']) == dict:
         for k in thing['value']:
-            if (type(k) != str and type(k) != Query) or (type(thing["value"][k]) != str and type(thing["value"][k]) != Query):
+            if type(k) != str or type(thing["value"][k]) != str:
                 raise ConfigError('You provided your data as a dict. The keys and values need to be strings')
     
     return True
@@ -101,7 +99,7 @@ def validate_method(thing):
 def validate_params(thing):
     if type(thing['value']) == dict:
         for k in thing['value']:
-            if (type(k) != str and type(k) != Query) or (type(thing['value'][k]) != str and type(thing['value'][k]) != Query):
+            if type(k) != str or type(thing['value'][k]) != str:
                 raise ConfigError("You provided params as a dict. Keys are values for this dict must be strings.")
     
     return True
@@ -146,7 +144,7 @@ class RequestsConfig:
             {'name':'data',\
             'value':None,\
             'description':'POST data to be sent along with the request. Can be dict or str.\nEg.\n{"input_field":"value"}\nor\ninput_field=value',\
-            'types':[dict,str,Query],\
+            'types':[dict,str],\
             'required':False,\
             'validator': validate_data},\
         'files':\
@@ -179,31 +177,15 @@ class RequestsConfig:
             'validator':None},\
         'url':\
             {'name':'url',\
-            'value':'http://sqlivuln/index.php?username=user1&password=secret${injection}',\
+            'value':'http://sqlivuln/sqlivuln/index.php?username=user1&password=secret${injection}',\
             'description':'The URL that requests should be sent to.',\
-            'types':[str,Query],\
+            'types':[str],\
             'required':True,\
             'validator':validate_url}}
 
     menu_text = "We need to determine what our HTTP request will look like. Bellow are the\navailable HTTP parameters. Please enter the number of the parameter you\nwould like to edit. When you are done setting up the HTTP parameters,\nyou can type 'done' to keep going.\n"
 
     prompt_text = "http_options"
-
-    def convert_to_query(self):
-        '''Convert a string or dict to Query if it matches the necessary syntax.'''
-        for key in self.config:
-            thing = self.config[key]
-            if type(thing['value']) == str and re.match(u'.*\$\{.+\}.*',thing['value']):
-                thing['value'] = Query(thing['value'],encoder=quote)
-            
-            elif type(thing['value']) == dict:
-                for key in thing['value']:
-                    if type(key) == str and re.match(u'\$\{.+\}',key):
-                        thing['value'][Query(key,encoder=quote)] = thing['value'][key]
-                        del(thing['value'][key])
-                    if type(thing['value'][key]) == str and re.match(u'\$\{.+\}',thing['value'][key]):
-                        thing['value'][key] = Quote(thing['value'][key],encoder=quote)
-
 
     def validate(self,quiet=False):
         ''' Check if all the config parameters are properly set'''
@@ -303,6 +285,8 @@ class RequestsConfig:
         return self.config[key]
     
     def __getattr__(self,key):
+        print key
+        print self.__class__
         if key not in self.config:
             raise KeyError
         return self.config[key]
@@ -353,9 +337,8 @@ def validate_search_type(thing):
     return True
 
 def validate_query(thing):
-    if type(thing['value']) != Query:
-        thing['value'] = Query(thing['value'])
-    
+    if type(thing['value']) != str:
+        raise ConfigError("looks like query is a %s. it should be a string..."%type(thing))
     return True
 
 
@@ -386,12 +369,9 @@ class bbqsqlConfig(RequestsConfig):
             {'name':'query',\
             'value':"' and ASCII(SUBSTR((SELECT data FROM data LIMIT 1 OFFSET ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} #",\
             'description':text.query_text,\
-            'types':[str,Query],\
+            'types':[str],\
             'required':True,\
             'validator':validate_query}}
 
     menu_text = "Please specify the following configuration parameters.\n"
     prompt_text = "attack_options"
-
-    def _convert_to_query(self,thing):
-        pass

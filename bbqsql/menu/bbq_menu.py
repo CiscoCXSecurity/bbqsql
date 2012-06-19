@@ -41,15 +41,13 @@ class bbqMenu:
                 # mainc ore menu
                 choice = (raw_input(bbqcore.setprompt()))
 
-                if choice == '1': # Binary Blind SQL Injection Test
+                if choice == '1':
                     requests_config.run_config()
                 
                 if choice == '2':
                     bbqsql_config.run_config()
                 
-                if choice == '5' and valid:
-                    requests_config.convert_to_query()
-                    
+                if choice == '5' and valid:                                    
                     # combine them into one dictionary
                     attack_config = {}
                     attack_config.update(requests_config.get_config())
@@ -57,8 +55,6 @@ class bbqMenu:
                     # launch attack
                     bbq = bbqsql.BlindSQLi(**attack_config)
                     results = bbq.run()
-                    del(bbq)
-                    del(results)
                     results = None
 
 
