@@ -178,4 +178,6 @@ class BlindSQLi:
 
         except KeyboardInterrupt:            
             print "stopping attack"
-            return []
+            # going to try to retreive the partial results. this could go badly
+            results = tech.get_results()
+            return results
