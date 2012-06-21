@@ -1,7 +1,7 @@
 #file: technique.py
 
 from .settings import *
-from .exceptions import *
+from .utilities import *
 
 import gevent
 from gevent.event import AsyncResult,Event
@@ -48,6 +48,7 @@ class BlindCharacter(object):
         self.working = False
         self.done = False
     
+    @debug
     def run(self):
         #make note of the current greenlet
         self.run_gl = gevent.getcurrent()
@@ -90,6 +91,7 @@ class BlindCharacter(object):
         #clear the note regarding the running greenlet
         self.run_gl = None
     
+    @debug
     def get_status(self):
         if self.error: return "error"
         if self.working: return "working"
@@ -326,6 +328,7 @@ class BooleanBlindTechnique:
         gevent.killall(self.request_makers)
         gevent.joinall(self.request_makers)
 
+    @debug
     def run(self,row_len=None,concurrency=20):
         '''
         run the exploit. returns the data retreived.
@@ -344,6 +347,7 @@ class BooleanBlindTechnique:
         
         return self.rungl
 
+    @debug
     def get_results(self,color=False):
         if not color:
             return filter(lambda row: row != '',[''.join([str(x) for x in row]) for row in self.results])
@@ -367,6 +371,7 @@ class BooleanBlindTechnique:
 
         #return filter(lambda row: row != '',[''.join([COLORS[x.get_status()] + str(x) + COLORS['endc'] for x in row]) for row in self.results])        
 
+    @debug
     def get_status(self):
         status = ""
         status += "requests: %d\t" % self.request_count
@@ -398,6 +403,7 @@ class FrequencyCharacter(BlindCharacter):
         self.previous_char = previous_char
         super(FrequencyCharacter,self).__init__(*args,**kwargs)
 
+    @debug
     def run(self):
         #make note of the current greenlet
         self.run_gl = gevent.getcurrent()

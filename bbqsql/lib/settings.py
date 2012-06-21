@@ -1,5 +1,7 @@
 #file: settings.py
 
+from bbqsql.lib.requester import *
+
 #######################
 # General Stuff
 #######################
@@ -8,8 +10,14 @@ CHARSET = [chr(x) for x in xrange(32,127)]
 #CHARSET = [chr(x) for x in xrange(32,39)] + [chr(x) for x in xrange(40,127)] #everything but '
 CHARSET_LEN = len(CHARSET)
 
-#Supress output when possible
+# Supress output when possible
 QUIET = False
+
+# Debugging
+DEBUG_FUNCTION_CALLS = True
+DEBUG_FUNCTION_ARGUMENTS = False
+DEBUG_FUNCTION_RETURNS = False
+DEBUG_FUNCTION_RETURN_VALUES = False
 
 #Do fancy pretty printing of results as they come in?
 PRETTY_PRINT = True
@@ -28,7 +36,6 @@ COLORS = {\
 #######################
 
 #mappings from response attributes to Requester subclasses
-from .requester import *
 response_attributes = {\
     'status_code':Requester,\
     'url':Requester,\

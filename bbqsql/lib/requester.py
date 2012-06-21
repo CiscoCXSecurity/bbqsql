@@ -1,5 +1,5 @@
 from .query import Query
-from .exceptions import *
+from .utilities import *
 import settings
 
 from requests import async
@@ -10,11 +10,13 @@ from difflib import SequenceMatcher
 
 __all__ = ['Requester','LooseNumericRequester','LooseTextRequester']
 
+@debug
 def requests_pre_hook(request):
     #hooks for the requests module to add some attributes
     request.start_time = time()
     return request
 
+@debug
 def requests_post_hook(request):
     #hooks for the requests module to add some attributes
     request.response.time = time() - request.start_time
@@ -49,6 +51,7 @@ class Requester(object):
         kwargs['hooks'] = {'pre_request':requests_pre_hook,'post_request':requests_post_hook}
         self.request = async.request(*args,**kwargs)
     
+    @debug
     def make_request(self,value="",case=None,rval=None):
         '''
         Make a request. The value specified will be compiled/rendered into all Query objects in the
@@ -86,6 +89,7 @@ class Requester(object):
 
         return self.cases[case]['rval']
 
+    @debug
     def _process_response(self,case,rval,response):
         self.cases.setdefault(case,{'values':[],'rval':rval})
 

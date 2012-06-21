@@ -13,7 +13,7 @@ from urllib import quote
 from gevent import socket
 import os
 
-DEBUG = True
+DEBUG = False
 def debug(fn):
     '''debugging decorator'''
     def wrapped(*args,**kwargs):
@@ -125,12 +125,9 @@ def validate_params(thing):
 def validate_url(thing):
     parsed_url = urlparse(str(thing['value']))
     netloc = parsed_url.netloc.split(':')[0]
-    print repr(netloc)
     try:
-        print "trying to resolve"
         socket.gethostbyname(netloc)
     except socket.error,err:
-        print 'socket error'
         raise ConfigError('Invalid host name. Cannot resolve. Socket Error: %s' % err)
     if parsed_url.scheme.lower() not in ['http','https']:
         raise ConfigError('Invalid url scheme. Only http and https')
@@ -251,7 +248,6 @@ class RequestsConfig:
         for key in config:
             if key in self.config:
                 self.config[key]['value'] = config[key]
-        print config
         self.validate()
     
     def run_config(self):
@@ -291,15 +287,13 @@ class RequestsConfig:
                 print "Description  : %s" % desc
                 self.validate()
                 print "\nPlease enter a new value for %s.\n" % key
+                
+                value = raw_input(bbqcore.setprompt(self.prompt_text,config_keys[choice]))
                 try:
-                        value = raw_input(bbqcore.setprompt(self.prompt_text,config_keys[choice]))
-                        try:
-                            value = eval(value)
-                        except:
-                            pass
-                        self[key]['value'] = None if value == '' else value
-                except KeyboardInterrupt:
+                    value = eval(value)
+                except:
                     pass
+                self[key]['value'] = None if value == '' else value
             
         if choice in ['exit','quit']:
             bbqcore.ExitBBQ(0)

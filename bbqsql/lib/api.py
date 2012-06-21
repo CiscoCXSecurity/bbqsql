@@ -1,6 +1,7 @@
+from .utilities import *
 from .query import Query
 from .pretty_print import PrettyTable
-from .technique import BooleanBlindTechnique,FrequencyTechnique
+from .technique import *
 import settings
 
 from urllib import quote
@@ -105,8 +106,6 @@ class BlindSQLi:
                     if type(kwargs[key][k]) == str and re.match(u'\$\{.+\}',kwargs[key][k]):
                         kwargs[key][k] = Quote(kwargs[key][k],encoder=quote)
 
-        print kwargs
-
         #build a Requester object. You can pass this any args that you would pass to requests.Request
         self.requester = requester_type(comparison_attr=comparison_attr, **kwargs)
 
@@ -133,8 +132,7 @@ class BlindSQLi:
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
             self.requester.make_request(value=self.query.render(),case='error',rval=False)
 
-        if not settings.QUIET: print "done setting up BooleanBlindSQLi"
-
+    @debug
     def run(self):
         '''
         Run the BlindSQLi attack, returning the retreived results.
