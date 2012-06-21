@@ -10,8 +10,18 @@ except ImportError:
 
 from urlparse import urlparse
 from urllib import quote
-import socket
+from gevent import socket
 import os
+
+DEBUG = True
+def debug(fn):
+    '''debugging decorator'''
+    def wrapped(*args,**kwargs):
+        if DEBUG: print 'Calling into %s' % fn.__name__
+        rval = fn(*args,**kwargs)
+        if DEBUG: print 'Returning from %s' % fn.__name__
+        return rval
+    return wrapped
 
 class ConfigError(Exception):
     '''Throw this exception when a method that hasn't been implemented gets called'''
@@ -20,6 +30,7 @@ class ConfigError(Exception):
     def __repr__(self):
         return "You have a config error: " + self.value
 
+@debug
 def validate_allow_redirects(thing):
     if type(thing['value']) == str:
         if thing['value'].lower() == 'false':
@@ -29,12 +40,14 @@ def validate_allow_redirects(thing):
     
     return True
 
+@debug
 def validate_ath(thing):
     if not (len(thing['value'])==2 and type(thing['value'][0])==str and type(thing['value'][1])==str):
         raise ConfigError("auth should be a tuple of two strings. Eg. ('username','password')")
 
     return True
 
+@debug
 def validate_cookies(thing):
     if type(thing['value']) == str:
         try:
@@ -52,6 +65,7 @@ def validate_cookies(thing):
     
     return True
 
+@debug
 def validate_headers(thing):
     if type(thing['value']) == str:
         try:
@@ -66,6 +80,7 @@ def validate_headers(thing):
     
     return True
 
+@debug
 def validate_data(thing):
     if type(thing['value']) == dict:
         for k in thing['value']:
@@ -74,6 +89,7 @@ def validate_data(thing):
     
     return True
 
+@debug
 def validate_files(thing):
     if type(thing['value']) == str:
         try:
@@ -89,12 +105,14 @@ def validate_files(thing):
     
     return True
 
+@debug
 def validate_method(thing):
     if thing['value'].lower() not in ['get','options','head','post','put','patch','delete']:
         raise ConfigError("The valid options for method are: ['get','options','head','post','put','patch','delete']")
 
     return True
 
+@debug
 def validate_params(thing):
     if type(thing['value']) == dict:
         for k in thing['value']:
@@ -103,14 +121,17 @@ def validate_params(thing):
     
     return True
 
+@debug
 def validate_url(thing):
-
     parsed_url = urlparse(str(thing['value']))
     netloc = parsed_url.netloc.split(':')[0]
+    print repr(netloc)
     try:
+        print "trying to resolve"
         socket.gethostbyname(netloc)
-    except socket.error:
-        raise ConfigError('Invalid host name. Cannot resolve.')
+    except socket.error,err:
+        print 'socket error'
+        raise ConfigError('Invalid host name. Cannot resolve. Socket Error: %s' % err)
     if parsed_url.scheme.lower() not in ['http','https']:
         raise ConfigError('Invalid url scheme. Only http and https')
     
@@ -176,7 +197,7 @@ class RequestsConfig:
             'validator':None},\
         'url':\
             {'name':'url',\
-            'value':'http://www.google.com',\
+            'value':'http://www.example.com/index.php?username=user1&password=secret${injection}',\
             #'value':'http://sqlivuln/sqlivuln/index.php?username=user1&password=secret${injection}',\
             'description':'The URL that requests should be sent to.',\
             'types':[str],\
@@ -216,9 +237,13 @@ class RequestsConfig:
         # make sure we're on the up and up
         kwargs = {}
         for key in self.config:
-            if self.config[key]['value'] != None and type(self.config[key]['value']) in self.config[key]['types'] and (self.config[key]['validator'] == None or self.config[key]['validator'](self.config[key])):
+            if \
+                self.config[key]['value'] != None \
+                and type(self.config[key]['value']) in self.config[key]['types'] \
+                and (\
+                    self.config[key]['validator'] == None \
+                    or self.config[key]['validator'](self.config[key])):
                 kwargs[key] = self.config[key]['value']
-        
         return kwargs
 
     def set_config(self,config):
@@ -272,7 +297,7 @@ class RequestsConfig:
                             value = eval(value)
                         except:
                             pass
-                        self[key]['value'] = value 
+                        self[key]['value'] = None if value == '' else value
                 except KeyboardInterrupt:
                     pass
             
@@ -318,7 +343,7 @@ class RequestsConfig:
     def __str__(self):
         return self.__repr__()
 
-
+@debug
 def validate_concurrency(thing):
     try:
         thing['value'] = int(thing['value'])
@@ -327,12 +352,14 @@ def validate_concurrency(thing):
 
     return True
 
+@debug
 def validate_comparison_attr(thing):
     if thing['value'] not in bbqsql.settings.response_attributes:
         raise ConfigError("You must choose a valid comparison_attr. Valid options include %s" % str(bbqsql.settings.response_attributes.keys()))
     
     return True
 
+@debug
 def validate_search_type(thing):
     if thing['value'] not in ['binary_search','frequency_search']:
         if 'binary' in thing['value']:
@@ -344,6 +371,7 @@ def validate_search_type(thing):
         
     return True
 
+@debug
 def validate_query(thing):
     if type(thing['value']) != str:
         raise ConfigError("looks like query is a %s. it should be a string..."%type(thing))

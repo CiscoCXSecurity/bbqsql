@@ -4,7 +4,7 @@ from bbqcore import bcolors
 from config import RequestsConfig,bbqsqlConfig
 import text
 import bbqcore
-from ConfigParser import RawConfigParser
+from ConfigParser import RawConfigParser,NoSectionError
 
 try:
     import readline
@@ -19,6 +19,8 @@ exclude_parms = ['csv_output_file']
 # main menu
 class bbqMenu:
     def __init__(self):
+        # default name for config file
+        self.config_file = 'attack.cfg'
         try:
             requests_config = RequestsConfig()
             bbqsql_config = bbqsqlConfig()
@@ -45,43 +47,58 @@ class bbqMenu:
                 choice = (raw_input(bbqcore.setprompt()))
 
                 if choice == '1':
+                    # Run configuration REPL for HTTP variables
                     requests_config.run_config()
                 
                 if choice == '2':
+                    # Run configuration REPL for bbqsql variables
                     bbqsql_config.run_config()
                 
-                if choice == '3':
+                if choice == '3':                    
                     # Export Config
                     attack_config = RawConfigParser()
                     attack_config.add_section('Request Config')
                     attack_config.add_section('HTTP Config')
-                    
                     for key,val in requests_config.get_config().iteritems():
                         attack_config.set('Request Config', key, val)
 
                     for key,val in bbqsql_config.get_config().iteritems():
                         attack_config.set('HTTP Config', key, val)
 
-                    with open('attack.cfg', 'wb') as configfile:
-                        attack_config.write(configfile)
+                    #get filename
+                    try:
+                        fname = raw_input('Config file name [./%s]: '%self.config_file)
+                        self.config_file = [fname,self.config_file][fname is '']
+                        with open(self.config_file, 'wb') as configfile:
+                            attack_config.write(configfile)
+                    except KeyboardInterrupt:
+                        pass
 
                 if choice == '4':
-                    #somehow populate this VVV tmp_config dict with stuff from file
+                    # Import Config
                     tmp_req_config = dict()
                     tmp_http_config = dict()
                     attack_config = RawConfigParser()
-                    attack_config.read('attack.cfg')
-            
-                    for key,val in attack_config.items('Request Config'):
-                        tmp_req_config[key] = val
-                    for key,val in attack_config.items('HTTP Config'):
-                        tmp_http_config[key] = val
-                  
-                    requests_config.set_config(tmp_req_config)
-                    bbqsql_config.set_config(tmp_http_config)
 
-                if choice == '5' and valid:                                    
-                    # clear out results
+                    #get filename
+                    try:
+                        fname = raw_input('Config file name [./%s]: '%self.config_file)
+                        self.config_file = [fname,self.config_file][fname is '']
+                        attack_config.read(self.config_file)
+                    except KeyboardInterrupt:
+                        pass
+                    try:
+                        for key,val in attack_config.items('Request Config'):
+                            tmp_req_config[key] = val
+                        for key,val in attack_config.items('HTTP Config'):
+                            tmp_http_config[key] = val
+                        requests_config.set_config(tmp_req_config)
+                        bbqsql_config.set_config(tmp_http_config)
+                    except ConfigParser.NoSectionError:
+                        print "bad config file. try again"
+
+                if choice == '5' and valid:
+                    # Run Exploit
                     results = None
 
                     # combine them into one dictionary
