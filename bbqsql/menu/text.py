@@ -10,8 +10,8 @@ main_text = " Select from the menu:\n"
 
 main_menu = ['Setup HTTP Parameters',
 	     'Setup BBQSQL Options',
-         'Export Config (not implemented)',
-         'Import Config (not implemented)',
+         'Export Config',
+         'Import Config',
 	     'Run Exploit',
 	     'Help, Credits, and About (not implemented)']	     
 
