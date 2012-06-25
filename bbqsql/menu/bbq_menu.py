@@ -5,6 +5,7 @@ from config import RequestsConfig,bbqsqlConfig
 import text
 import bbqcore
 from ConfigParser import RawConfigParser,NoSectionError
+import readline
 
 try:
     import readline
@@ -82,6 +83,7 @@ class bbqMenu:
 
                     #get filename
                     try:
+                        readline.parse_and_bind('tab: complete')
                         fname = raw_input('Config file name [./%s]: '%self.config_file)
                         self.config_file = [fname,self.config_file][fname is '']
                         attack_config.read(self.config_file)
