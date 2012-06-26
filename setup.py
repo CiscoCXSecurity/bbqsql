@@ -12,5 +12,5 @@ setup(name=bbqsql.__title__,
       url='http://github.com/mastahyeti/bbqsql',
       packages=['bbqsql','bbqsql.lib','bbqsql.menu'],
       scripts=['scripts/bbqsql'],
-      requires=['gevent','requests','numpy']
+      requires=['gevent','requests=>0.11.0','numpy']
      )
