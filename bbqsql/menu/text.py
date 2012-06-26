@@ -2,7 +2,7 @@
 
 '''Text should be stored here'''
 
-from bbqcore import bcolors
+from bbq_core import bcolors
 
 define_version = '1.0'
 

@@ -1,9 +1,9 @@
 import bbqsql
 
-from bbqcore import bcolors
+from bbq_core import bcolors
 from config import RequestsConfig,bbqsqlConfig
 import text
-import bbqcore
+import bbq_core
 from ConfigParser import RawConfigParser,NoSectionError
 import readline
 
@@ -32,8 +32,8 @@ class bbqMenu:
             # intitial user menu
             choice = ''
             while choice not in ['99',99,'quit','exit']:
-                bbqcore.show_banner()
-                show_main_menu = bbqcore.CreateMenu(text.main_text, text.main_menu)
+                bbq_core.show_banner()
+                show_main_menu = bbq_core.CreateMenu(text.main_text, text.main_menu)
          
                  # special case of list item 99
                 print '\n  99) Exit the bbqsql injection toolkit\n'
@@ -45,7 +45,7 @@ class bbqMenu:
                 if results: print results
 
                 # mainc ore menu
-                choice = (raw_input(bbqcore.setprompt()))
+                choice = (raw_input(bbq_core.setprompt()))
 
                 if choice == '1':
                     # Run configuration REPL for HTTP variables
@@ -68,12 +68,13 @@ class bbqMenu:
 
                     #get filename
                     try:
+                        readline.parse_and_bind('tab: complete')
                         fname = raw_input('Config file name [./%s]: '%self.config_file)
                         self.config_file = [fname,self.config_file][fname is '']
                         with open(self.config_file, 'wb') as configfile:
                             attack_config.write(configfile)
                     except KeyboardInterrupt:
-                        pass
+                        pass 
 
                 if choice == '4':
                     # Import Config
@@ -122,11 +123,11 @@ class bbqMenu:
                     # delete stuff
                     del(bbq)
 
-            bbqcore.ExitBBQ(0)
+            bbq_core.ExitBBQ(0)
             
         # ## handle keyboard interrupts
         except KeyboardInterrupt:
-            print "\n\n Cath you later " + bbqcore.bcolors.RED+"@" + bbqcore.bcolors.ENDC+" the dinner table."
+            print "\n\n Cath you later " + bbq_core.bcolors.RED+"@" + bbq_core.bcolors.ENDC+" the dinner table."
 
 
 if __name__ == '__main__':
