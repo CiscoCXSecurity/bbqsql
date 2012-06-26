@@ -1,7 +1,7 @@
 import bbqsql
 
-import bbqcore
-from bbqcore import bcolors
+import bbq_core
+from bbq_core import bcolors
 import text
 try:
     import readline
@@ -255,8 +255,8 @@ class RequestsConfig:
         config_keys = self.config.keys()
         choice = ''
         while choice not in ['done','back','quit','exit',99,'99']:
-            bbqcore.show_banner()
-            http_main_menu = bbqcore.CreateMenu(self.menu_text, [])
+            bbq_core.show_banner()
+            http_main_menu = bbq_core.CreateMenu(self.menu_text, [])
             
             for ki in xrange(len(config_keys)):
                 key = config_keys[ki]
@@ -268,7 +268,7 @@ class RequestsConfig:
             self.validate()
 
             #get input
-            choice = (raw_input(bbqcore.setprompt(self.prompt_text)))
+            choice = (raw_input(bbq_core.setprompt(self.prompt_text)))
             #convert to int
             try:
                 choice = int(choice)
@@ -277,7 +277,7 @@ class RequestsConfig:
             
             if choice in range(len(config_keys)):
                 key = config_keys[choice]
-                bbqcore.show_banner()
+                bbq_core.show_banner()
                 print "Parameter    : %s" % key
                 print "Value        : %s" % repr(self[key]['value'])
                 print "Allowed types: %s" % repr([t.__name__ for t in self[key]['types']])
@@ -288,7 +288,7 @@ class RequestsConfig:
                 self.validate()
                 print "\nPlease enter a new value for %s.\n" % key
                 
-                value = raw_input(bbqcore.setprompt(self.prompt_text,config_keys[choice]))
+                value = raw_input(bbq_core.setprompt(self.prompt_text,config_keys[choice]))
                 try:
                     value = eval(value)
                 except:
@@ -296,7 +296,7 @@ class RequestsConfig:
                 self[key]['value'] = None if value == '' else value
             
         if choice in ['exit','quit']:
-            bbqcore.ExitBBQ(0)
+            bbq_core.ExitBBQ(0)
     
     def keys(self):
         return self.config.keys()
