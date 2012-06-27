@@ -3,7 +3,7 @@ from .query import Query
 from bbqsql import utilities
 from bbqsql import settings
 
-import grequests
+from requests import async
 from math import sqrt
 from copy import copy
 from time import time
@@ -36,6 +36,8 @@ class EasyMath():
         return means
 
     def stdv(self,number_list,means):
+        print number_list
+        print means
         size = len(number_list)
         std = sqrt(sum((x-means)**2 for x in number_list) / size)
         return std
@@ -64,7 +66,7 @@ class Requester(object):
         
         #Request related stuff
         kwargs['hooks'] = {'pre_request':requests_pre_hook,'post_request':requests_post_hook}
-        self.request = grequests.request(*args,**kwargs)
+        self.request = async.request(*args,**kwargs)
     
     @utilities.debug 
     def make_request(self,value="",case=None,rval=None):
