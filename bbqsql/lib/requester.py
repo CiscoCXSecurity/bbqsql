@@ -4,9 +4,9 @@ from bbqsql import utilities
 from bbqsql import settings
 
 from requests import async
-from math import sqrt
 from copy import copy
 from time import time
+from math import sqrt
 from difflib import SequenceMatcher
 
 __all__ = ['Requester','LooseNumericRequester','LooseTextRequester']
