@@ -6,8 +6,9 @@ from bbqsql import settings
 from requests import async
 from copy import copy
 from time import time
-from numpy import mean,std
+from math import sqrt
 from difflib import SequenceMatcher
+from time import sleep
 
 __all__ = ['Requester','LooseNumericRequester','LooseTextRequester']
 
@@ -25,6 +26,19 @@ def requests_post_hook(request):
     else: request.response.size = 0
     return request
 
+class EasyMath():
+    def mean(self,number_list):
+        if len(number_list) == 0:
+            return float('nan')
+
+        floatNums = [float(x) for x in number_list]
+        means = sum(floatNums) / len(number_list)
+        return means
+
+    def stdv(self,number_list,means):
+        size = len(number_list)
+        std = sqrt(sum((x-means)**2 for x in number_list) / size)
+        return std
 
 class Requester(object):
     '''
@@ -126,10 +140,11 @@ class LooseNumericRequester(Requester):
             del(self.cases[case]['values'][0])
 
         #statistics :D
-        m = mean(self.cases[case]['values'])
-        self.cases[case]['mean'] = m
+        math = EasyMath()
+        m = math.mean(self.cases[case]['values'])
+        s = math.stdv(self.cases[case]['values'], m)
 
-        s = std(self.cases[case]['values'])
+        self.cases[case]['mean'] = m
         self.cases[case]['stddev'] = s
 
         self._check_for_overlaps()
@@ -140,7 +155,8 @@ class LooseNumericRequester(Requester):
             for inner in self.cases:
                 #if the return vals are the same, it doesn't really matter if they blend together.
                 if self.cases[inner]['rval'] != self.cases[outer]['rval']:
-                    mean_stddev = mean((self.cases[inner]['stddev'],self.cases[outer]['stddev']))
+                    math = EasyMath()
+                    mean_stddev = math.mean([self.cases[inner]['stddev'],self.cases[outer]['stddev']])
                     diff = abs(self.cases[inner]['mean'] - self.cases[outer]['mean'])
                     if diff < mean_stddev*2: 
                         print self.cases
@@ -169,11 +185,13 @@ class LooseNumericRequester(Requester):
         for index in xrange(len(ordered_cases)):
             lower_avg = None
             upper_avg = None
+            math = EasyMath()
             if index != 0:
-                lower_avg = mean((ordered_cases[index-1]['mean'],ordered_cases[index]['mean']))
+                lower_avg = math.mean([ordered_cases[index-1]['mean'],ordered_cases[index]['mean']])
+                #print ordered_cases[index-1]['mean'],ordered_cases[index]['mean']
 
             if index != len(ordered_cases) - 1:
-                upper_avg = mean((ordered_cases[index]['mean'],ordered_cases[index+1]['mean']))
+                upper_avg = math.mean([ordered_cases[index]['mean'],ordered_cases[index+1]['mean']])
 
             if not lower_avg and value <= upper_avg:
                 return ordered_cases[index]['case']
