@@ -3,7 +3,7 @@ from .query import Query
 from bbqsql import utilities
 from bbqsql import settings
 
-from requests import async
+import grequests
 from math import sqrt
 from copy import copy
 from time import time
@@ -63,7 +63,7 @@ class Requester(object):
         
         #Request related stuff
         kwargs['hooks'] = {'pre_request':requests_pre_hook,'post_request':requests_post_hook}
-        self.request = async.request(*args,**kwargs)
+        self.request = grequests.request(*args,**kwargs)
     
     @utilities.debug 
     def make_request(self,value="",case=None,rval=None):
