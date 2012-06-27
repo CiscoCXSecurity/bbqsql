@@ -195,7 +195,7 @@ class RequestsConfig:
             'validator':None},\
         'url':\
             {'name':'url',\
-            'value':'http://boomer.neohapsis.com/sqlivuln/index.php?username=user1&password=secret${injection}',\
+            'value':'http://example.com/sqlivuln/index.php?username=user1&password=secret${injection}',\
             'description':'The URL that requests should be sent to.',\
             'types':[str],\
             'required':True,\
