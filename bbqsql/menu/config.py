@@ -1,8 +1,7 @@
-import bbqsql
-
 import bbq_core
 from bbq_core import bcolors
 import text
+
 try:
     import readline
 except ImportError:
@@ -12,6 +11,8 @@ from urlparse import urlparse
 from urllib import quote
 from gevent import socket
 import os
+
+response_attributes = ['status_code', 'url', 'time', 'size', 'text', 'content', 'encoding', 'cookies', 'headers', 'history']
 
 DEBUG = False
 def debug(fn):
@@ -194,8 +195,7 @@ class RequestsConfig:
             'validator':None},\
         'url':\
             {'name':'url',\
-            'value':'http://www.example.com/index.php?username=user1&password=secret${injection}',\
-            #'value':'http://sqlivuln/sqlivuln/index.php?username=user1&password=secret${injection}',\
+            'value':'http://boomer.neohapsis.com/sqlivuln/index.php?username=user1&password=secret${injection}',\
             'description':'The URL that requests should be sent to.',\
             'types':[str],\
             'required':True,\
@@ -348,8 +348,8 @@ def validate_concurrency(thing):
 
 @debug
 def validate_comparison_attr(thing):
-    if thing['value'] not in bbqsql.settings.response_attributes:
-        raise ConfigError("You must choose a valid comparison_attr. Valid options include %s" % str(bbqsql.settings.response_attributes.keys()))
+    if thing['value'] not in response_attributes:
+        raise ConfigError("You must choose a valid comparison_attr. Valid options include %s" % str(response_attributes))
     
     return True
 
@@ -376,7 +376,7 @@ class bbqsqlConfig(RequestsConfig):
     config = {\
         'concurrency':\
             {'name':'concurrency',\
-            'value':150,\
+            'value':30,\
             'description':'Controls the amount of concurrency to run the attack with. This is useful for throttling the requests',\
             'types':[str,int],\
             'required':True,\
@@ -391,7 +391,7 @@ class bbqsqlConfig(RequestsConfig):
         'comparison_attr':\
             {'name':'comparison_attr',\
             'value':'size',\
-            'description':"Which attribute of the http response bbqsql should look at to determine true/false. Valid options include %s" % str(bbqsql.settings.response_attributes.keys()),\
+            'description':"Which attribute of the http response bbqsql should look at to determine true/false. Valid options include %s" % str(response_attributes),\
             'types':[str],\
             'required':True,\
             'validator':validate_comparison_attr},\

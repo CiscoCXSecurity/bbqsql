@@ -1,7 +1,6 @@
 #
 # Centralized classes, work in progress
 # 
-import bbqsql
 
 import re
 import os
@@ -82,7 +81,7 @@ def show_banner():
     Development: """ + bcolors.RED+"""Scott Behrens"""+bcolors.BLUE+"""("""+bcolors.YELLOW+"""arbit"""+bcolors.BLUE+""")         
     Menu modified from code for Social Engineering Toolkit (SET) by: """ + bcolors.RED+"""David Kennedy """+bcolors.BLUE+"""("""+bcolors.YELLOW+"""ReL1K"""+bcolors.BLUE+""")    
     SET is located at: """ + bcolors.RED+"""http://www.secmaniac.com"""+bcolors.BLUE+"""("""+bcolors.YELLOW+"""SET"""+bcolors.BLUE+""")    
-    Version: """+bcolors.RED+"""%s""" % (bbqsql.__version__) +bcolors.BLUE+"""               
+    Version: """+bcolors.RED+"""%s""" % ('1.0') +bcolors.BLUE+"""               
     
   """ + bcolors.GREEN+"""  The 5 S's of BBQ: 
     Sauce, Spice, Smoke, Sizzle, and """ + bcolors.RED+"""SQLi
