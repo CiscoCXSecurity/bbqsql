@@ -4,11 +4,10 @@ from bbqsql import utilities
 from bbqsql import settings
 
 from requests import async
+from math import sqrt
 from copy import copy
 from time import time
-from math import sqrt
 from difflib import SequenceMatcher
-from time import sleep
 
 __all__ = ['Requester','LooseNumericRequester','LooseTextRequester']
 
@@ -188,7 +187,6 @@ class LooseNumericRequester(Requester):
             math = EasyMath()
             if index != 0:
                 lower_avg = math.mean([ordered_cases[index-1]['mean'],ordered_cases[index]['mean']])
-                #print ordered_cases[index-1]['mean'],ordered_cases[index]['mean']
 
             if index != len(ordered_cases) - 1:
                 upper_avg = math.mean([ordered_cases[index]['mean'],ordered_cases[index+1]['mean']])
