@@ -1,8 +1,10 @@
-from .utilities import *
 from .query import Query
 from .pretty_print import PrettyTable
 from .technique import *
-import settings
+from .requester import *
+
+from bbqsql import utilities
+from bbqsql import settings
 
 from urllib import quote
 from traceback import print_exc
@@ -11,6 +13,21 @@ import re
 __all__ = ['Query','BlindSQLi']
 
 techniques = {'binary_search':BooleanBlindTechnique,'frequency_search':FrequencyTechnique}
+
+
+#mappings from response attributes to Requester subclasses
+response_attributes = {\
+    'status_code':Requester,\
+    'url':Requester,\
+    'time':LooseNumericRequester,\
+    'size':LooseNumericRequester,\
+    'text':LooseTextRequester,\
+    'content':LooseTextRequester,\
+    'encoding':LooseTextRequester,\
+    'cookies':LooseTextRequester,\
+    'headers':LooseTextRequester,\
+    'history':LooseTextRequester
+}
 
 class BlindSQLi:
     '''
@@ -85,7 +102,7 @@ class BlindSQLi:
             raise Exception("You are trying to use the %s technique, which is not a valid technique. Your options are %s" % (technique,repr(techniques.keys())))
 
         try:
-            requester_type = settings.response_attributes[comparison_attr]
+            requester_type = response_attributes[comparison_attr]
         except KeyError:
             print "You tried to use a comparison_attr that isn't supported. Check the docs for a list"
             quit()
@@ -132,7 +149,7 @@ class BlindSQLi:
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
             self.requester.make_request(value=self.query.render(),case='error',rval=False)
 
-    @debug
+    @utilities.debug 
     def run(self):
         '''
         Run the BlindSQLi attack, returning the retreived results.

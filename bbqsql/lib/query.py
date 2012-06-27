@@ -1,5 +1,5 @@
 # file: query.py
-from .utilities import *
+from bbqsql import utilities
 
 class Query(object):
     '''
@@ -30,39 +30,39 @@ class Query(object):
         else:
             self.options = self.parse_query(q_string)
     
-    @debug
+    @utilities.debug 
     def get_option(self,ident):
         '''
         Get the option value whose name is 'ident'
         '''
         return self.options.get(ident,False)
     
-    @debug
+    @utilities.debug 
     def set_option(self,ident,val):
         '''
         Set the value of the option whose name is 'ident' to val
         '''
         if self.has_option(ident):self.options[ident] = val
     
-    @debug
+    @utilities.debug 
     def has_option(self,option):
         return option in self.options
 
-    @debug
+    @utilities.debug 
     def get_options(self):
         '''
         Get all of the options (in a dict) for the query
         '''
         return self.options
     
-    @debug
+    @utilities.debug 
     def set_options(self,options):
         '''
         Set the queries option (dict).
         '''
         self.options = options
     
-    @debug
+    @utilities.debug 
     def parse_query(self,q):
         '''
         This is mostly an internal method, but I didn't want to make it private.
@@ -81,7 +81,7 @@ class Query(object):
                 options[ident] = default
         return options
     
-    @debug
+    @utilities.debug 
     def render(self):
         '''
         This compiles the queries options and the original query string into a string.

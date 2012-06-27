@@ -29,5 +29,3 @@ __copyright__ = 'Copyright 2012 Ben Toews (mastahyeti)'
 
 from lib import *
 from menu import bbqMenu 
-
-__all__ = ['Query','BlindSQLi','bbqMenu','settings']

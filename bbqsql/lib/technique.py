@@ -1,7 +1,7 @@
 #file: technique.py
 
-from .settings import *
-from .utilities import *
+from bbqsql import settings
+from bbqsql import utilities
 
 import gevent
 from gevent.event import AsyncResult,Event
@@ -41,25 +41,25 @@ class BlindCharacter(object):
 
         self.row_index = row_index
         self.char_index = char_index
-        self.char_val = CHARSET[0]
+        self.char_val = settings.CHARSET[0]
 
         #these flags are used in computing the __str__, __repr__, and __eq__
         self.error = False
         self.working = False
         self.done = False
     
-    @debug
+    @utilities.debug 
     def run(self):
         #make note of the current greenlet
         self.run_gl = gevent.getcurrent()
 
         low = 0
-        high = CHARSET_LEN
+        high = settings.CHARSET_LEN
         self.working = True        
         #binary search unless we hit an error
         while not self.error and self.working:
             mid = (low+high)//2
-            self.char_val = CHARSET[mid]
+            self.char_val = settings.CHARSET[mid]
 
             if low >= high:
                 self.error = True
@@ -67,13 +67,13 @@ class BlindCharacter(object):
                 break
 
             if self._test("<"):
-                #print "data[%d][%d] > %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],ord(CHARSET[mid]))
+                #print "data[%d][%d] > %s (%d)" % (self.row_index,self.char_index,settings.CHARSET[mid],ord(settings.CHARSET[mid]))
                 high = mid
             elif self._test(">"):
-                #print "data[%d][%d] < %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],ord(CHARSET[mid]))
+                #print "data[%d][%d] < %s (%d)" % (self.row_index,self.char_index,settings.CHARSET[mid],ord(settings.CHARSET[mid]))
                 low = mid + 1
-            elif low < CHARSET_LEN and self._test("="):
-                #print "data[%d][%d] = %s (%d)" % (self.row_index,self.char_index,CHARSET[mid],ord(CHARSET[mid]))
+            elif low < settings.CHARSET_LEN and self._test("="):
+                #print "data[%d][%d] = %s (%d)" % (self.row_index,self.char_index,settings.CHARSET[mid],ord(settings.CHARSET[mid]))
                 self.working = False
                 break
             else:
@@ -91,7 +91,7 @@ class BlindCharacter(object):
         #clear the note regarding the running greenlet
         self.run_gl = None
     
-    @debug
+    @utilities.debug 
     def get_status(self):
         if self.error: return "error"
         if self.working: return "working"
@@ -209,7 +209,7 @@ class BooleanBlindTechnique:
             while response == None:
                 try:
                     response = self.requester.make_request(query_string)
-                except SendRequestFailed:
+                except utilities.SendRequestFailed:
                     self.failure_count += 1
                     response = None
                     gevent.sleep(.01 * 2 ** count)                    
@@ -328,7 +328,7 @@ class BooleanBlindTechnique:
         gevent.killall(self.request_makers)
         gevent.joinall(self.request_makers)
 
-    @debug
+    @utilities.debug 
     def run(self,row_len=None,concurrency=20):
         '''
         run the exploit. returns the data retreived.
@@ -347,7 +347,7 @@ class BooleanBlindTechnique:
         
         return self.rungl
 
-    @debug
+    @utilities.debug 
     def get_results(self,color=False):
         if not color:
             return filter(lambda row: row != '',[''.join([str(x) for x in row]) for row in self.results])
@@ -362,16 +362,16 @@ class BooleanBlindTechnique:
                     for c in row:
                         cstatus = c.get_status()
                         if cstatus != running_status:
-                            row_string += COLORS[cstatus]
+                            row_string += settings.COLORS[cstatus]
                             running_status = cstatus
                         row_string += str(c)
-                    rval.append(row_string + COLORS['endc'])
+                    rval.append(row_string + settings.COLORS['endc'])
         return rval
             
 
-        #return filter(lambda row: row != '',[''.join([COLORS[x.get_status()] + str(x) + COLORS['endc'] for x in row]) for row in self.results])        
+        #return filter(lambda row: row != '',[''.join([settings.COLORS[x.get_status()] + str(x) + settings.COLORS['endc'] for x in row]) for row in self.results])        
 
-    @debug
+    @utilities.debug 
     def get_status(self):
         status = ""
         status += "requests: %d\t" % self.request_count
@@ -403,7 +403,7 @@ class FrequencyCharacter(BlindCharacter):
         self.previous_char = previous_char
         super(FrequencyCharacter,self).__init__(*args,**kwargs)
 
-    @debug
+    @utilities.debug 
     def run(self):
         #make note of the current greenlet
         self.run_gl = gevent.getcurrent()

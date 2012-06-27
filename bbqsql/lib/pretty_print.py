@@ -1,6 +1,6 @@
 # file: pretty_print.py
 
-from .utilities import *
+from bbqsql import utilities
 
 import sys
 import re
@@ -8,7 +8,7 @@ import gevent
 from gevent.event import Event
 from subprocess import Popen,PIPE,STDOUT
 
-@debug
+@utilities.debug 
 def len_less_color(line):
 	'''return the length of a string with the color characters stripped out'''
 	return len(re.sub(u'\033\[[0-9]+m','',line))
@@ -28,11 +28,11 @@ class PrettyTable:
 
 		self.row_filter = row_filter
 
-	@debug
+	@utilities.debug 
 	def start(self):
 		self._printer_glet = gevent.spawn(self._table_printer)
 
-	@debug
+	@utilities.debug 
 	def die(self):
 		self._printer_glet.kill()
 

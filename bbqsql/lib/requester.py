@@ -1,6 +1,7 @@
 from .query import Query
-from .utilities import *
-import settings
+
+from bbqsql import utilities
+from bbqsql import settings
 
 from requests import async
 from copy import copy
@@ -10,13 +11,13 @@ from difflib import SequenceMatcher
 
 __all__ = ['Requester','LooseNumericRequester','LooseTextRequester']
 
-@debug
+@utilities.debug 
 def requests_pre_hook(request):
     #hooks for the requests module to add some attributes
     request.start_time = time()
     return request
 
-@debug
+@utilities.debug 
 def requests_post_hook(request):
     #hooks for the requests module to add some attributes
     request.response.time = time() - request.start_time
@@ -51,7 +52,7 @@ class Requester(object):
         kwargs['hooks'] = {'pre_request':requests_pre_hook,'post_request':requests_post_hook}
         self.request = async.request(*args,**kwargs)
     
-    @debug
+    @utilities.debug 
     def make_request(self,value="",case=None,rval=None):
         '''
         Make a request. The value specified will be compiled/rendered into all Query objects in the
@@ -74,7 +75,7 @@ class Requester(object):
 
         #send request. handle errors
         if not new_request.send():
-            raise SendRequestFailed("looks like you have a problem")
+            raise utilities.SendRequestFailed("looks like you have a problem")
 
         #print new_request.response.text
 
@@ -89,7 +90,7 @@ class Requester(object):
 
         return self.cases[case]['rval']
 
-    @debug
+    @utilities.debug 
     def _process_response(self,case,rval,response):
         self.cases.setdefault(case,{'values':[],'rval':rval})
 
@@ -143,7 +144,7 @@ class LooseNumericRequester(Requester):
                     diff = abs(self.cases[inner]['mean'] - self.cases[outer]['mean'])
                     if diff < mean_stddev*2: 
                         print self.cases
-                        raise TrueFalseRangeOverlap("truth and falsity overlap")
+                        raise utilities.TrueFalseRangeOverlap("truth and falsity overlap")
 
     def _test(self,response):
         '''test a value'''

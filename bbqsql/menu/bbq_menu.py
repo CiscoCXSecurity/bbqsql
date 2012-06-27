@@ -4,15 +4,15 @@ from bbq_core import bcolors
 from config import RequestsConfig,bbqsqlConfig
 import text
 import bbq_core
+
 from ConfigParser import RawConfigParser,NoSectionError
-import readline
+from copy import copy
 
 try:
     import readline
+    readline.parse_and_bind('tab: complete')
 except ImportError:
     pass
-
-from copy import copy
 
 # config params that are only used in the menu and shouldn't be passed along to BlindSQLi or other parts of bbqsql
 exclude_parms = ['csv_output_file']
@@ -68,7 +68,6 @@ class bbqMenu:
 
                     #get filename
                     try:
-                        readline.parse_and_bind('tab: complete')
                         fname = raw_input('Config file name [./%s]: '%self.config_file)
                         self.config_file = [fname,self.config_file][fname is '']
                         with open(self.config_file, 'wb') as configfile:

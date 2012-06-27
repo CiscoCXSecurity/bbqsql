@@ -1,7 +1,5 @@
 #file: settings.py
 
-from bbqsql.lib.requester import *
-
 #######################
 # General Stuff
 #######################
@@ -34,20 +32,6 @@ COLORS = {\
 #######################
 # Blind Technique Stuff
 #######################
-
-#mappings from response attributes to Requester subclasses
-response_attributes = {\
-    'status_code':Requester,\
-    'url':Requester,\
-    'time':LooseNumericRequester,\
-    'size':LooseNumericRequester,\
-    'text':LooseTextRequester,\
-    'content':LooseTextRequester,\
-    'encoding':LooseTextRequester,\
-    'cookies':LooseTextRequester,\
-    'headers':LooseTextRequester,\
-    'history':LooseTextRequester
-}
 
 #How many base requests to make to setup Truth() objects
 TRUTH_BASE_REQUESTS = 5
