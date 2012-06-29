@@ -4,6 +4,9 @@ from bbqsql import utilities
 from bbqsql import settings
 
 import grequests
+import requests
+import gevent 
+
 from math import sqrt
 from copy import copy
 from time import time
@@ -21,8 +24,10 @@ def requests_pre_hook(request):
 def requests_post_hook(request):
     #hooks for the requests module to add some attributes
     request.response.time = time() - request.start_time
-    if hasattr(request.response.content,'__len__'): request.response.size = len(request.response.content)
-    else: request.response.size = 0
+    if hasattr(request.response.content,'__len__'): 
+        request.response.size = len(request.response.content)
+    else: 
+        request.response.size = 0
     return request
 
 class EasyMath():
@@ -63,6 +68,7 @@ class Requester(object):
         
         #Request related stuff
         kwargs['hooks'] = {'pre_request':requests_pre_hook,'post_request':requests_post_hook}
+
         self.request = grequests.request(*args,**kwargs)
     
     @utilities.debug 
@@ -86,11 +92,11 @@ class Requester(object):
             new_request.__dict__[elt] = new_request.__dict__[elt].render()
             if not settings.QUIET and not settings.PRETTY_PRINT: print "{}: {}".format(elt,new_request.__dict__[elt])    
 
-        #send request. handle errors
-        if not new_request.send():
+        #send request.
+        glet = grequests.send(new_request)
+        glet.join()
+        if not glet.get() and type(new_request.response.error) is requests.exceptions.ConnectionError:
             raise utilities.SendRequestFailed("looks like you have a problem")
-
-        #print new_request.response.text
 
         #see if the response was 'true'
         if case is None:
