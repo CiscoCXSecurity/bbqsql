@@ -5,7 +5,9 @@ from config import RequestsConfig,bbqsqlConfig
 import text
 import bbq_core
 
-from ConfigParser import RawConfigParser,NoSectionError
+
+import argparse
+from ConfigParser import RawConfigParser,NoSectionError,MissingSectionHeaderError
 from copy import copy
 
 try:
@@ -18,8 +20,8 @@ except ImportError:
 exclude_parms = ['csv_output_file']
 
 # main menu
-class bbqMenu:
-    def __init__(self):
+class bbqMenu():
+    def __init__(self, run_config=None):
         # default name for config file
         self.config_file = 'attack.cfg'
         try:
@@ -43,6 +45,28 @@ class bbqMenu:
                 valid = rvalid and bvalid
 
                 if results: print results
+
+                if run_config:
+                    tmp_req_config = dict()
+                    tmp_http_config = dict()
+                    try:
+                        attack_config = RawConfigParser()
+                        self.config_file = [run_config,self.config_file][run_config is '']
+                        attack_config.read(self.config_file)
+                    except:
+                        pass
+                    try:
+                        for key,val in attack_config.items('Request Config'):
+                            tmp_req_config[key] = val
+                        for key,val in attack_config.items('HTTP Config'):
+                            tmp_http_config[key] = val
+                        requests_config.set_config(tmp_req_config)
+                        bbqsql_config.set_config(tmp_http_config)
+                    except NoSectionError:
+                        print "bad config file. try again"
+
+                # Loaded config so clear it out
+                run_config = None
 
                 # mainc ore menu
                 choice = (raw_input(bbq_core.setprompt()))
@@ -72,6 +96,9 @@ class bbqMenu:
                         self.config_file = [fname,self.config_file][fname is '']
                         with open(self.config_file, 'wb') as configfile:
                             attack_config.write(configfile)
+                    except IOError:
+                        print 'Invalid Config or File Path'
+                        pass
                     except KeyboardInterrupt:
                         pass 
 
@@ -87,7 +114,7 @@ class bbqMenu:
                         fname = raw_input('Config file name [./%s]: '%self.config_file)
                         self.config_file = [fname,self.config_file][fname is '']
                         attack_config.read(self.config_file)
-                    except KeyboardInterrupt:
+                    except:
                         pass
                     try:
                         for key,val in attack_config.items('Request Config'):
@@ -96,7 +123,7 @@ class bbqMenu:
                             tmp_http_config[key] = val
                         requests_config.set_config(tmp_req_config)
                         bbqsql_config.set_config(tmp_http_config)
-                    except ConfigParser.NoSectionError:
+                    except NoSectionError:
                         print "bad config file. try again"
 
                 if choice == '5' and valid:
@@ -130,4 +157,13 @@ class bbqMenu:
 
 
 if __name__ == '__main__':
-    bbqMenu()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-V', '--version', action="store_true", default=False)
+    parser.add_argument('-c', metavar='run_config', nargs='+', help='import config file', default=None)
+
+    results = parser.parse_args()
+
+    if results.c == None:
+        bbqMenu()
+    else:
+        bbqMenu(results.c[0])
