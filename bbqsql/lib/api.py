@@ -134,20 +134,28 @@ class BlindSQLi:
         self.query.set_option('char_index','1')
         self.query.set_option('row_index','0')
 
+        print "\n"*40
+
         #setup some base values
         #true
+        first = True
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=self.query.render(),case='true',rval=True)
+            self.requester.make_request(value=self.query.render(),case='true',rval=True,debug=first)
+            first = False
 
         #false
+        first = True
         self.query.set_option('comparator',opp_cmp)
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=self.query.render(),case='false',rval=False)
+            self.requester.make_request(value=self.query.render(),case='false',rval=False,debug=first)
+            first = False
 
         #error
+        first = True
         self.query.set_option('char_index','1000')
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=self.query.render(),case='error',rval=False)
+            self.requester.make_request(value=self.query.render(),case='error',rval=False,debug=first)
+            first = False
 
     @utilities.debug 
     def run(self):

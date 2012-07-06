@@ -140,12 +140,17 @@ class bbqMenu():
                             del(attack_config[key])
                     # launch attack
                     bbq = bbqsql.BlindSQLi(**attack_config)
-                    results = bbq.run()
-                    #output to a file if thats what they're into
-                    if bbqsql_config['csv_output_file']['value'] is not None:
-                        f = open(bbqsql_config['csv_output_file']['value'],'w')
-                        f.write("\n".join(results))
-                        f.close()
+                    try:
+                        ok = raw_input('Everything lookin groovy?[y,n] ')
+                    except KeyboardInterrupt:
+                        ok = False
+                    if ok and ok[0] != 'n':
+                        results = bbq.run()
+                        #output to a file if thats what they're into
+                        if bbqsql_config['csv_output_file']['value'] is not None:
+                            f = open(bbqsql_config['csv_output_file']['value'],'w')
+                            f.write("\n".join(results))
+                            f.close()
                     # delete stuff
                     del(bbq)
 

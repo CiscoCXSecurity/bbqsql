@@ -72,7 +72,7 @@ class Requester(object):
         self.request = grequests.request(*args,**kwargs)
     
     @utilities.debug 
-    def make_request(self,value="",case=None,rval=None):
+    def make_request(self,value="",case=None,rval=None,debug=False):
         '''
         Make a request. The value specified will be compiled/rendered into all Query objects in the
         request. If case and rval are specified the response will be appended to the list of values 
@@ -90,7 +90,9 @@ class Requester(object):
                 opts[opt] = value
             new_request.__dict__[elt].set_options(opts)
             new_request.__dict__[elt] = new_request.__dict__[elt].render()
-            if not settings.QUIET and not settings.PRETTY_PRINT: print "{}: {}".format(elt,new_request.__dict__[elt])    
+            if debug:
+                print "Injecting into '%s' parameter" % elt
+                print "It looks like this: %s" % new_request.__dict__[elt]
 
         #send request.
         glet = grequests.send(new_request)
@@ -103,9 +105,15 @@ class Requester(object):
             case = self._test(new_request.response)
             rval = self.cases[case]['rval']
 
-        self._process_response(case,rval,new_request.response)
+        if debug and case:
+            print "we will be treating this as a '%s' response" % case
 
-        if not settings.QUIET and not settings.PRETTY_PRINT: print "Evaluated as: {}\n".format(self.cases[case]['rval'])
+        if debug: 
+            print "the response attribute '%s' was '%s'" % (self.comparison_attr,getattr(new_request.response,self.comparison_attr))
+            print "\n"
+
+
+        self._process_response(case,rval,new_request.response)
 
         return self.cases[case]['rval']
 
