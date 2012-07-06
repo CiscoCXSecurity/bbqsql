@@ -107,9 +107,7 @@ class Requester(object):
 
         if debug and case:
             print "we will be treating this as a '%s' response" % case
-
-        if debug: 
-            print "the response attribute '%s' was '%s'" % (self.comparison_attr,getattr(new_request.response,self.comparison_attr))
+            print "for the sample requests, the response's '%s' were the following :\n\t%s" % (self.comparison_attr,self.cases[case]['values'])
             print "\n"
 
 
@@ -171,8 +169,7 @@ class LooseNumericRequester(Requester):
                     math = EasyMath()
                     mean_stddev = math.mean([self.cases[inner]['stddev'],self.cases[outer]['stddev']])
                     diff = abs(self.cases[inner]['mean'] - self.cases[outer]['mean'])
-                    if diff < mean_stddev*2: 
-                        print self.cases
+                    if diff <= mean_stddev*2: 
                         raise utilities.TrueFalseRangeOverlap("truth and falsity overlap")
 
     def _test(self,response):

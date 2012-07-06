@@ -95,6 +95,7 @@ class BlindSQLi:
         '''
 
         self.concurrency = concurrency
+        self.error = False
 
         try:
             self.technique_type = techniques[technique]
@@ -134,28 +135,28 @@ class BlindSQLi:
         self.query.set_option('char_index','1')
         self.query.set_option('row_index','0')
 
-        print "\n"*40
+        print "\n"*100
+        try:
+            #setup some base values
+            #true
+            for i in xrange(settings.TRUTH_BASE_REQUESTS):
+                self.requester.make_request(value=self.query.render(),case='true',rval=True,debug=(i==settings.TRUTH_BASE_REQUESTS-1))
 
-        #setup some base values
-        #true
-        first = True
-        for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=self.query.render(),case='true',rval=True,debug=first)
-            first = False
-
-        #false
-        first = True
-        self.query.set_option('comparator',opp_cmp)
-        for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=self.query.render(),case='false',rval=False,debug=first)
-            first = False
-
+            #false
+            self.query.set_option('comparator',opp_cmp)
+            for i in xrange(settings.TRUTH_BASE_REQUESTS):
+                self.requester.make_request(value=self.query.render(),case='false',rval=False,debug=(i==settings.TRUTH_BASE_REQUESTS-1))
+        except utilities.TrueFalseRangeOverlap:
+            self.error = "The response values for true and false are overlapping. Check your configuration.\n"
+            self.error += "here are the cases we have collected:\n"
+            self.error += str(self.requester.cases)
+            
+        '''
         #error
-        first = True
         self.query.set_option('char_index','1000')
         for i in xrange(settings.TRUTH_BASE_REQUESTS):
-            self.requester.make_request(value=self.query.render(),case='error',rval=False,debug=first)
-            first = False
+            self.requester.make_request(value=self.query.render(),case='error',rval=False,debug=(i==settings.TRUTH_BASE_REQUESTS-1))
+        '''
 
     @utilities.debug 
     def run(self):

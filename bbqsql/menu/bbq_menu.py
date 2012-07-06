@@ -29,6 +29,7 @@ class bbqMenu():
             bbqsql_config = bbqsqlConfig()
 
             results = None
+            error = None
             valid = False
 
             # intitial user menu
@@ -45,6 +46,7 @@ class bbqMenu():
                 valid = rvalid and bvalid
 
                 if results: print results
+                if error: print bbq_core.bcolors.RED+error+ bbq_core.bcolors.ENDC
 
                 if run_config:
                     tmp_req_config = dict()
@@ -140,17 +142,21 @@ class bbqMenu():
                             del(attack_config[key])
                     # launch attack
                     bbq = bbqsql.BlindSQLi(**attack_config)
-                    try:
-                        ok = raw_input('Everything lookin groovy?[y,n] ')
-                    except KeyboardInterrupt:
-                        ok = False
-                    if ok and ok[0] != 'n':
-                        results = bbq.run()
-                        #output to a file if thats what they're into
-                        if bbqsql_config['csv_output_file']['value'] is not None:
-                            f = open(bbqsql_config['csv_output_file']['value'],'w')
-                            f.write("\n".join(results))
-                            f.close()
+                    if not bbq.error:
+                        error = None
+                        try:
+                            ok = raw_input('Everything lookin groovy?[y,n] ')
+                        except KeyboardInterrupt:
+                            ok = False
+                        if ok and ok[0] != 'n':
+                            results = bbq.run()
+                            #output to a file if thats what they're into
+                            if bbqsql_config['csv_output_file']['value'] is not None:
+                                f = open(bbqsql_config['csv_output_file']['value'],'w')
+                                f.write("\n".join(results))
+                                f.close()
+                    else:
+                        error = bbq.error
                     # delete stuff
                     del(bbq)
 
