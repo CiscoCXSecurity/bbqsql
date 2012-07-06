@@ -126,10 +126,13 @@ def validate_params(thing):
 def validate_url(thing):
     parsed_url = urlparse(str(thing['value']))
     netloc = parsed_url.netloc.split(':')[0]
+    # this is slowing us down. gotta cut it loose
+    '''
     try:
         socket.gethostbyname(netloc)
     except socket.error,err:
         raise ConfigError('Invalid host name. Cannot resolve. Socket Error: %s' % err)
+    '''
     if parsed_url.scheme.lower() not in ['http','https']:
         raise ConfigError('Invalid url scheme. Only http and https')
     
