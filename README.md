@@ -40,7 +40,8 @@ Below is an example query you can use to construct your query.
 
 In this example, the attacker is looking to select the database version:
 <code>
-vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0:0:0${sleep}'; --
+vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) 
+${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0:0:0${sleep}'; --
 </code>
 
 The query syntax is based around placeholders which tell BBQSQL how to execute the attack.  
