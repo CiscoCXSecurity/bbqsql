@@ -17,21 +17,13 @@ Must provide the usual information:
 <code>
 
 URL
-
 HTTP Method
-
 Headers
-
 Cookies
-
 Encoding methods
-
 Redirect behavior
-
 Files
-
 HTTP Auth
-
 Proxies
 </code>
 
