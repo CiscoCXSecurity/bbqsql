@@ -10,11 +10,6 @@ import argparse
 from ConfigParser import RawConfigParser,NoSectionError,MissingSectionHeaderError
 from copy import copy
 
-try:
-    import readline
-    readline.parse_and_bind('tab: complete')
-except ImportError:
-    pass
 
 # config params that are only used in the menu and shouldn't be passed along to BlindSQLi or other parts of bbqsql
 exclude_parms = ['csv_output_file']
@@ -83,6 +78,11 @@ class bbqMenu():
                 
                 if choice == '3':                    
                     # Export Config
+                    try:
+                        import readline
+                        readline.parse_and_bind('tab: complete')
+                    except ImportError:
+                        pass
                     attack_config = RawConfigParser()
                     attack_config.add_section('Request Config')
                     attack_config.add_section('HTTP Config')
@@ -106,6 +106,11 @@ class bbqMenu():
 
                 if choice == '4':
                     # Import Config
+                    try:
+                        import readline
+                        readline.parse_and_bind('tab: complete')
+                    except ImportError:
+                        pass
                     tmp_req_config = dict()
                     tmp_http_config = dict()
                     attack_config = RawConfigParser()
