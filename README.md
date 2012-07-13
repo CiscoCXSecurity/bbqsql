@@ -57,21 +57,9 @@ You need to provide the following placeholders of information  in order for the 
 
 __${row_index}__ = This tells bbqsql to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
 
-Exp(start with row index 1):
-
-<code> ${row_index:1}</code>
-
 __${char_index}__ = This tells bbqsql which character from the subselect to query.  
 
-Exp(start with character index 1):
-
-<code> ${char_index:1}</code>
-
 __${char_val}__ = This tells bbqsql where to compare the results  from the subselect to validate the result
-
-Exp(start with 0 as the default character value to test with):
-
-<code> ${char_val:1}</code>
 
 __${comparator}__ = This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
 
