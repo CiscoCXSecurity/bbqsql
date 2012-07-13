@@ -47,23 +47,21 @@ The query input is where you will construct your query used to exfiltrate inform
 Below is an example query you can use to construct your query.
 
 In this example, the attacker is looking to select the database version:
-<code>
+
 vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0:0:0${sleep}'; --
-</code>
 
 
 The query syntax is based around placeholders which tell BBQSQL how to execute the attack.  
 
 You need to provide the following placeholders of information  in order for the attack to work.  Once you put these in your query, bbqsql will do the rest:
 
-__${row_index}__ = This tells bbqsql to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value 
+__${row_index}__ = This tells bbqsql to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
 
 Exp(start with row index 1):
 
 <code> ${row_index:1}</code>
 
-__${char_index}__ = This tells bbqsql which character from the 
-subselect to query.  
+__${char_index}__ = This tells bbqsql which character from the subselect to query.  
 
 Exp(start with character index 1):
 
@@ -77,8 +75,7 @@ Exp(start with 0 as the default character value to test with):
 
 __${comparator}__ = This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
 
-__${sleep}__ = This is optional but tells bbqsql where to insert
-the number of seconds to sleep when performing time based sql  
+__${sleep}__ = This is optional but tells bbqsql where to insert the number of seconds to sleep when performing time based sql  
 injection
 
 ## What's up with the name? ##
