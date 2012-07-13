@@ -17,13 +17,21 @@ Must provide the usual information:
 <code>
 
 URL
+
 HTTP Method
+
 Headers
+
 Cookies
+
 Encoding methods
+
 Redirect behavior
+
 Files
+
 HTTP Auth
+
 Proxies
 </code>
 
@@ -41,8 +49,10 @@ Below is an example query you can use to construct your query.
 In this example, the attacker is looking to select the database version:
 <code>
 vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) 
+
 ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0:0:0${sleep}'; --
 </code>
+
 
 The query syntax is based around placeholders which tell BBQSQL how to execute the attack.  
 
@@ -50,11 +60,22 @@ You need to provide the following placeholders of information  in order for the 
 
 __${row_index}__ = This tells bbqsql to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value 
 
+Exp(start with row index 1):
+
+<code> ${row_index:1}</code>
+
 __${char_index}__ = This tells bbqsql which character from the 
 subselect to query.  
 
-__${char_val}__ = This tells bbqsql where to compare the results 
-from the subselect to validate the result
+Exp(start with character index 1):
+
+<code> ${char_index:1}</code>
+
+__${char_val}__ = This tells bbqsql where to compare the results  from the subselect to validate the result
+
+Exp(start with 0 as the default character value to test with):
+
+<code> ${char_val:1}</code>
 
 __${comparator}__ = This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
 
