@@ -4,6 +4,7 @@ from bbq_core import bcolors
 from config import RequestsConfig,bbqsqlConfig
 import text
 import bbq_core
+import time
 
 
 import argparse
@@ -154,6 +155,8 @@ class bbqMenu():
                         except KeyboardInterrupt:
                             ok = False
                         if ok and ok[0] != 'n':
+                            print bbq
+                            time.sleep(5)
                             results = bbq.run()
                             #output to a file if thats what they're into
                             if bbqsql_config['csv_output_file']['value'] is not None:
@@ -173,13 +176,14 @@ class bbqMenu():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-V', '--version', action="store_true", default=False)
-    parser.add_argument('-c', metavar='run_config', nargs='+', help='import config file', default=None)
+    parser = argparse.ArgumentParser(prog='bbqsql')
+    parser.add_argument('-V', '--version', action='version', version='%(prog)s 0.9')
+    parser.add_argument('-c',  metavar='config', nargs='+', help='import config file', default=None)
 
     results = parser.parse_args()
+    print results
 
-    if results.c == None:
-        bbqMenu()
-    else:
+    if results.c is not None:
         bbqMenu(results.c[0])
+    else:
+        bbqMenu()
