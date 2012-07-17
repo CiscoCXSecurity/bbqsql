@@ -9,6 +9,9 @@ Blind SQL injection can be a pain to exploit. When the available tools work they
 
 BBQSQL is a blind SQL injection framework written in Python.  It is extremely useful when attacking tricky SQL injection vulnerabilities. BBQSQL is also a semi-automatic tool, allowing quite a bit of customization for those hard to trigger SQL injection findings.  The tool is built to be database agnostic and is extremely versatile.  It also has an intuitive UI to make setting up attacks much easier.  Python gevent is also implemented, making BBQSQL extremely fast.
 
+## Overview of Readme ##
+We tried to write the tool in such a way that it would be very self explanatory when seeing up an attack in the UI.  However, for sake of thoroughness we have included a detailed Readme that should provide you additional insight on the specifics of each configuration option.  One thing to note is that every configuration option in the UI has a description associated with it, so if you do choose to fire up the tool without reading this page you should be able to hack your way through an attack.  
+
 ## High Level Usage ##
 
 Similar to other SQL injection tools you provide certain request information.  
@@ -43,9 +46,9 @@ In the menu you will see a place for BBQSQL options.  Here you specify the follo
 
 ### query ###
 
-This is described in greater detail below.
+This is described in greater detail below [query syntax overview](#query).
 
-### csv_output_file ###
+### csv\_output\_file ###
 
 The name of a file to output the results to. Leave this blank if you dont want output to a file.
 
@@ -58,7 +61,8 @@ The second technique you can use is frequency_search.  Frequency searching is ba
 You can specify either 'binary_search' or 'frequency_search' as the value for this parameter.  
 
 
-## Query Syntax Overview ##
+
+## Query Syntax Overview<a id="query"></a> ##
 
 If you run into a SQL injection vulnerability that has some weird quirks (such as certain characters can't be included or functions like ASCII/CHAR do not work), you have probably found yourself writing some sort of script with your custom injection syntax.  BBQSQL takes out the scripting part and provides a way for you to paste in your custom query syntax and exploit with ease.  
 
@@ -68,7 +72,7 @@ Below is an example query you can use to construct your query.
 
 In this example, the attacker is looking to select the database version:
 
-vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0:0:0${sleep}'; --
+vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0\:0\:0${sleep}'; --
 
 
 The query syntax is based around placeholders which tell BBQSQL how to execute the attack.  
