@@ -46,7 +46,7 @@ In the menu you will see a place for BBQSQL options.  Here you specify the follo
 
 ### query ###
 
-This is described in greater detail below [query syntax overview](#QuerySyntaxOverview).
+This is described in greater detail below [query syntax overview](#query-syntax-overview).
 
 ### csv\_output\_file ###
 
@@ -60,9 +60,17 @@ The second technique you can use is frequency_search.  Frequency searching is ba
 
 You can specify either 'binary_search' or 'frequency_search' as the value for this parameter.  
 
+### comparison_attr ###
 
+This specifies the type of SQL injection you have discovered.  Here you can set which attribute of the http response bbqsql should look at to determine true/false.  
 
-## Query Syntax Overview<a id="QuerySyntaxOverview"></a> ##
+You can specify: 'status_code', 'url', 'time', 'size', 'text', 'content', 'encoding', 'cookies', 'headers', or 'history'
+
+### concurrency ###
+
+Concurrency is based on the gevent library in Python.  Functionally, it appears to act like threading but the specifics of how this works can be seen in our DefCon talk here [insert link here].  This setting controls the amount of concurrency to run the attack with. This is useful for throttling the requests and speeding up attack times.  For really high performance web-servers such as nginx, we have been able to set the concurrency to 75.  By default this is set to '30'.  
+
+## Query Syntax Overview ##
 
 If you run into a SQL injection vulnerability that has some weird quirks (such as certain characters can't be included or functions like ASCII/CHAR do not work), you have probably found yourself writing some sort of script with your custom injection syntax.  BBQSQL takes out the scripting part and provides a way for you to paste in your custom query syntax and exploit with ease.  
 
