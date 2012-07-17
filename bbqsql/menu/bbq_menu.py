@@ -177,7 +177,7 @@ class bbqMenu():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='bbqsql')
-    parser.add_argument('-V', '--version', action='version', version='%(prog)s 0.9')
+    parser.add_argument('-V', '--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('-c',  metavar='config', nargs='+', help='import config file', default=None)
 
     results = parser.parse_args()
