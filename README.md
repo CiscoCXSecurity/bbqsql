@@ -46,7 +46,7 @@ In the menu you will see a place for BBQSQL options.  Here you specify the follo
 
 ### query ###
 
-This is described in greater detail below [query syntax overview](#Query Syntax Overview).
+This is described in greater detail below [query syntax overview](#QuerySyntaxOverview).
 
 ### csv\_output\_file ###
 
@@ -62,7 +62,7 @@ You can specify either 'binary_search' or 'frequency_search' as the value for th
 
 
 
-## Query Syntax Overview<a id="Query Syntax Overview"></a> ##
+## Query Syntax Overview<a id="QuerySyntaxOverview"></a> ##
 
 If you run into a SQL injection vulnerability that has some weird quirks (such as certain characters can't be included or functions like ASCII/CHAR do not work), you have probably found yourself writing some sort of script with your custom injection syntax.  BBQSQL takes out the scripting part and provides a way for you to paste in your custom query syntax and exploit with ease.  
 
