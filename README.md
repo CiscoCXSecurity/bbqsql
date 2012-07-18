@@ -87,7 +87,7 @@ The query syntax is based around placeholders which tell BBQSQL how to execute t
 
 You need to provide the following placeholders of information  in order for the attack to work.  Once you put these in your query, bbqSQL will do the rest:
 
-__${row_index}__ = This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
+`__${row_index}__` = This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
 
 __${char_index}__ = This tells bbqSQL which character from the subselect to query.  
 
