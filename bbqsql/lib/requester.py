@@ -65,9 +65,31 @@ class Requester(object):
 
         self.comparison_attr = comparison_attr
         self.acceptable_deviation = acceptable_deviation
-        
-        #Request related stuff
-        kwargs['hooks'] = {'pre_request':requests_pre_hook,'post_request':requests_post_hook}
+
+        # we require our own hooks for keeping track of time. 
+        # if they defined hooks, we need to wrap them in our 
+        # hooks so they both get called
+
+        kwargs.setdefault('hooks',{})
+
+        # if they defined pre_request hook, we wrap it with ours
+        if 'pre_request' in kwargs['hooks']:
+            orig = kwargs['hooks']['pre_request']
+            wrapped = lambda request:requests_pre_hook(orig(request))
+            kwargs['hooks']['pre_request'] = wrapped
+
+        # otherwise, we just stick with our own hook
+        else:
+            kwargs['hooks']['pre_request'] = requests_pre_hook            
+
+        # same for post_request hooks
+        if 'post_request' in kwargs['hooks']:
+            orig = kwargs['hooks']['post_request']
+            wrapped = lambda request:requests_post_hook(orig(request))
+            kwargs['hooks']['post_request'] = wrapped
+
+        else:
+            kwargs['hooks']['post_request'] = requests_post_hook            
 
         self.request = grequests.request(*args,**kwargs)
     

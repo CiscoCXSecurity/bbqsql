@@ -5,7 +5,8 @@ from config import RequestsConfig,bbqsqlConfig
 import text
 import bbq_core
 import time
-
+import os
+import sys
 
 import argparse
 from ConfigParser import RawConfigParser,NoSectionError,MissingSectionHeaderError
@@ -138,10 +139,28 @@ class bbqMenu():
                     # Run Exploit
                     results = None
 
+                    # try to import the user defined hooks
+                    try:
+                        cwd = os.getcwd()
+                        if cwd not in sys.path:
+                            sys.path.append(cwd)
+                        from bbqsql_hooks import hooks as user_defined_hooks
+                        print "Hooks Loaded!!!"
+                    except ImportError:
+                        pass
+
                     # combine them into one dictionary
                     attack_config = {}
                     attack_config.update(requests_config.get_config())
                     attack_config.update(bbqsql_config.get_config())
+
+                    # add user defined hooks to our config
+                    try:
+                        attack_config['hooks'] = user_defined_hooks
+                        print "Hooks Set!"
+                    except NameError:
+                        pass
+
                     #delete unwanted config params before sending the config along
                     for key in exclude_parms:
                         if key in attack_config:
