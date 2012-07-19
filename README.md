@@ -77,15 +77,11 @@ The query syntax is based around placeholders which tell BBQSQL how to execute t
 
 You need to provide the following placeholders of information  in order for the attack to work.  Once you put these in your query, bbqSQL will do the rest:
 
-`__${row_index}__` = This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
-
-`__${char_index}__` = This tells bbqSQL which character from the subselect to query.  
-
-`__${char_val}__` = This tells bbqSQL where to compare the results  from the subselect to validate the result.
-
-`__${comparator}__` = This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
-
-`__${sleep}__` = This is optional but tells bbqSQL where to insert the number of seconds to sleep when performing time based SQL injection.
+- `${row_index}` = This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
+- `${char_index}` = This tells bbqSQL which character from the subselect to query.  
+- `${char_val}` = This tells bbqSQL where to compare the results  from the subselect to validate the result.
+- `${comparator}` = This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
+- `${sleep}` = This is optional but tells bbqSQL where to insert the number of seconds to sleep when performing time based SQL injection.
 
 Not all of these place holders are required.  For example, if you have discovered semi-blind boolean based SQL injection you can omit the `__${sleep}__` parameter.  
 
@@ -93,19 +89,19 @@ Not all of these place holders are required.  For example, if you have discovere
 
 Sometimes you need to do something really crazy. Maybe do you need to encrypt the values going into a field before sending the request or maybe you need to triple URL encode. Regardless, these situations make other tools impossible to use. BBQSQL allows you to define "hook" functions that the tool will call at various points throughout the request. For example, you can specify a `pre_request` function that takes the request as its argument, does whatever mutations are necessary, and returns the modified request to be sent on to the server.
 
-To implement this, just create a file named `bbqsql_hooks.py` in your current working directory. Here you can define your callback functions for the hooks. Then, at the bottom of this file, add a dict named `hooks` whose format is {'hook_name':hook_function}.
+To implement this, just create a file named `bbqsql_hooks.py` in your current working directory. Here you can define your callback functions for the hooks. Then, at the bottom of this file, add a dict named `hooks` whose format is `{'hook_name':hook_function}`.
 
 When you run BBQSQL, it will look in your current directory (as well as your normal Python path) for for file named `bbqsql_hooks.py` and will import from it the dict named `hooks`. 
 
 
 The following hooks are made available:
-- `args`:
+`args`:
     - A dictionary of the arguments being sent to Request().
-- `pre_request`:
+`pre_request`:
     - The Request object, directly before being sent.
-- `post_request`:
+`post_request`:
     - The Request object, directly after being sent.
-- `response`:
+`response`:
     - The response generated from a Request.
 
 For more information on how these hooks work and on how your `hooks` dictionary should look, check out the [requests library documentation on its hooks](http://docs.python-requests.org/en/latest/user/advanced/#event-hooks)
