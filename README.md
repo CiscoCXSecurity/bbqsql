@@ -77,11 +77,11 @@ The query syntax is based around placeholders which tell BBQSQL how to execute t
 
 You need to provide the following placeholders of information  in order for the attack to work.  Once you put these in your query, bbqSQL will do the rest:
 
-- `${row_index}` = This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
-- `${char_index}` = This tells bbqSQL which character from the subselect to query.  
-- `${char_val}` = This tells bbqSQL where to compare the results  from the subselect to validate the result.
-- `${comparator}` = This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
-- `${sleep}` = This is optional but tells bbqSQL where to insert the number of seconds to sleep when performing time based SQL injection.
+- `${row_index}`: This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
+- `${char_index}`: This tells bbqSQL which character from the subselect to query.  
+- `${char_val}`: This tells bbqSQL where to compare the results  from the subselect to validate the result.
+- `${comparator}`: This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
+- `${sleep}`: This is optional but tells bbqSQL where to insert the number of seconds to sleep when performing time based SQL injection.
 
 Not all of these place holders are required.  For example, if you have discovered semi-blind boolean based SQL injection you can omit the `__${sleep}__` parameter.  
 
@@ -96,17 +96,13 @@ When you run BBQSQL, it will look in your current directory (as well as your nor
 
 The following hooks are made available:
 
-`args`:
-    - A dictionary of the arguments being sent to Request().
+`args`: A dictionary of the arguments being sent to Request().
 
-`pre_request`:
-    - The Request object, directly before being sent.
+`pre_request`: The Request object, directly before being sent.
 
-`post_request`:
-    - The Request object, directly after being sent.
-    
-`response`:
-    - The response generated from a Request.
+`post_request`: The Request object, directly after being sent.
+
+`response`: The response generated from a Request.
 
 For more information on how these hooks work and on how your `hooks` dictionary should look, check out the [requests library documentation on its hooks](http://docs.python-requests.org/en/latest/user/advanced/#event-hooks)
 
