@@ -106,6 +106,23 @@ The following hooks are made available:
 
 For more information on how these hooks work and on how your `hooks` dictionary should look, check out the [requests library documentation on its hooks](http://docs.python-requests.org/en/latest/user/advanced/#event-hooks)
 
+An example `bbqsql_hooks.py` file might look like this:
+
+```python
+    # file: bbqsql_hooks.py
+    import time
+
+    def my_pre_hook(req):
+        """
+        this hook replaces a placeholder with the current time
+        expecting the url to look like this:
+            http://www.google.com?k=v&time=PLACEHOLDER
+        """
+        req.url.replace('PLACEHOLDER',str(time.time()))
+        return req
+
+    hooks = {'pre_request':my_pre_hook}
+```
 
 ## What's up with the name? ##
 
