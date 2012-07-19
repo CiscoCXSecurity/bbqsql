@@ -70,20 +70,20 @@ Below is an example query you can use to construct your query.
 
 In this example, the attacker is looking to select the database version:
 
-    vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0\:0\:0${sleep}'; --
+`vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0\:0\:0${sleep}'; --`
 
 
 The query syntax is based around placeholders which tell BBQSQL how to execute the attack.  
 
 You need to provide the following placeholders of information  in order for the attack to work.  Once you put these in your query, bbqSQL will do the rest:
 
-- `${row_index}`: This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
+- `${row_index}`: This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on `${row_index}` value.
 - `${char_index}`: This tells bbqSQL which character from the subselect to query.  
 - `${char_val}`: This tells bbqSQL where to compare the results  from the subselect to validate the result.
 - `${comparator}`: This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
 - `${sleep}`: This is optional but tells bbqSQL where to insert the number of seconds to sleep when performing time based SQL injection.
 
-Not all of these place holders are required.  For example, if you have discovered semi-blind boolean based SQL injection you can omit the `__${sleep}__` parameter.  
+Not all of these place holders are required.  For example, if you have discovered semi-blind boolean based SQL injection you can omit the `${sleep}` parameter.  
 
 ## Custom Hooks ##
 
