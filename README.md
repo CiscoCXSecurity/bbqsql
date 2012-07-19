@@ -2,13 +2,13 @@
 *A Blind SQL Injection Exploitation Tool*
 
 ## Table Of Contents ##
-- [What is BBQSQL?](https://github.com/Neohapsis/bbqsql#what-is-bbqsql)
-- [Overview of Readme](https://github.com/Neohapsis/bbqsql#overview-of-readme)
-- [High Level Usage](https://github.com/Neohapsis/bbqsql#high-level-usage)
-- [BBQSQL Options](https://github.com/Neohapsis/bbqsql#bbqsql-options)
-- [Query Syntax Overview](https://github.com/Neohapsis/bbqsql#query-syntax-overview)
-- [Custom Hooks](https://github.com/Neohapsis/bbqsql#custom-hooks)
-- [What's up with the name?](https://github.com/Neohapsis/bbqsql#whats-up-with-the-name)
+- [What is BBQSQL?](#what-is-bbqsql)
+- [Overview of Readme](#overview-of-readme)
+- [High Level Usage](#high-level-usage)
+- [BBQSQL Options](#bbqsql-options)
+- [Query Syntax Overview](#query-syntax-overview)
+- [Custom Hooks](#custom-hooks)
+- [What's up with the name?](#whats-up-with-the-name)
 
 ## What is BBQSQL?##
 
