@@ -95,12 +95,16 @@ When you run BBQSQL, it will look in your current directory (as well as your nor
 
 
 The following hooks are made available:
+
 `args`:
     - A dictionary of the arguments being sent to Request().
+
 `pre_request`:
     - The Request object, directly before being sent.
+
 `post_request`:
     - The Request object, directly after being sent.
+    
 `response`:
     - The response generated from a Request.
 
