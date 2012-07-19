@@ -3,7 +3,7 @@
 
 
 
-## What is BBQSQL?##f
+## What is BBQSQL?##
 
 Blind SQL injection can be a pain to exploit. When the available tools work they work well, but when they don't you have to write something custom. This is time-consuming and tedious.  BBQSQL can help you address those issues. 
 
@@ -17,26 +17,16 @@ We tried to write the tool in such a way that it would be very self explanatory 
 Similar to other SQL injection tools you provide certain request information.  
 
 Must provide the usual information:
-<code>
 
-URL
-
-HTTP Method
-
-Headers
-
-Cookies
-
-Encoding methods
-
-Redirect behavior
-
-Files
-
-HTTP Auth
-
-Proxies
-</code>
+- URL
+- HTTP Method
+- Headers
+- Cookies
+- Encoding methods
+- Redirect behavior
+- Files
+- HTTP Auth
+- Proxies
 
 Then specify where the injection is going and what syntax we are injecting.  Read on for details.  
 
@@ -58,13 +48,13 @@ BBQSQL utilizes two techniques when conducting a blind SQL injection attack.  Th
 
 The second technique you can use is frequency_search.  Frequency searching is based on an analysis of the English language to determine the frequency in which a letter will occur.  This search method is very fast against non-entropic data, but can be slow against non-english or obfuscated data.
 
-You can specify either 'binary_search' or 'frequency_search' as the value for this parameter.  
+You can specify either `binary_search1` or `frequency_search` as the value for this parameter.  
 
 ### comparison_attr ###
 
 This specifies the type of SQL injection you have discovered.  Here you can set which attribute of the http response bbqsql should look at to determine true/false.  
 
-You can specify: 'status_code', 'url', 'time', 'size', 'text', 'content', 'encoding', 'cookies', 'headers', or 'history'
+You can specify: `status_code`, `url`, `time`, `size`, `text`, `content`, `encoding`, `cookies`, `headers`, or `history`
 
 ### concurrency ###
 
@@ -80,25 +70,45 @@ Below is an example query you can use to construct your query.
 
 In this example, the attacker is looking to select the database version:
 
-vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0\:0\:0${sleep}'; --
+    vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT 1 OFFSET ${row_index}) , ${char_index} ,1))) ${comparator:>}ASCII(${char_val}) WAITFOR DELAY '0\:0\:0${sleep}'; --
 
 
 The query syntax is based around placeholders which tell BBQSQL how to execute the attack.  
 
 You need to provide the following placeholders of information  in order for the attack to work.  Once you put these in your query, bbqSQL will do the rest:
 
-__${row_index}__ = This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
+`__${row_index}__` = This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
 
-__${char_index}__ = This tells bbqSQL which character from the subselect to query.  
+`__${char_index}__` = This tells bbqSQL which character from the subselect to query.  
 
-__${char_val}__ = This tells bbqSQL where to compare the results  from the subselect to validate the result.
+`__${char_val}__` = This tells bbqSQL where to compare the results  from the subselect to validate the result.
 
-__${comparator}__ = This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
+`__${comparator}__` = This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
 
-__${sleep}__ = This is optional but tells bbqSQL where to insert the number of seconds to sleep when performing time based SQL injection.
+`__${sleep}__` = This is optional but tells bbqSQL where to insert the number of seconds to sleep when performing time based SQL injection.
 
-Not all of these place holders are required.  For example, if you have discovered semi-blind boolean based SQL injection you can omit the __${sleep}__ parameter.  
+Not all of these place holders are required.  For example, if you have discovered semi-blind boolean based SQL injection you can omit the `__${sleep}__` parameter.  
 
+## Custom Hooks ##
+
+Sometimes you need to do something really crazy. Maybe do you need to encrypt the values going into a field before sending the request or maybe you need to triple URL encode. Regardless, these situations make other tools impossible to use. BBQSQL allows you to define "hook" functions that the tool will call at various points throughout the request. For example, you can specify a `pre_request` function that takes the request as its argument, does whatever mutations are necessary, and returns the modified request to be sent on to the server.
+
+To implement this, just create a file named `bbqsql_hooks.py` in your current working directory. Here you can define your callback functions for the hooks. Then, at the bottom of this file, add a dict named `hooks` whose format is {'hook_name':hook_function}.
+
+When you run BBQSQL, it will look in your current directory (as well as your normal Python path) for for file named `bbqsql_hooks.py` and will import from it the dict named `hooks`. 
+
+
+The following hooks are made available:
+- `args`:
+    - A dictionary of the arguments being sent to Request().
+- `pre_request`:
+    - The Request object, directly before being sent.
+- `post_request`:
+    - The Request object, directly after being sent.
+- `response`:
+    - The response generated from a Request.
+
+For more information on how these hooks work and on how your `hooks` dictionary should look, check out the [requests library documentation on its hooks](http://docs.python-requests.org/en/latest/user/advanced/#event-hooks)
 
 
 ## What's up with the name? ##
