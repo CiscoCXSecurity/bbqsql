@@ -109,19 +109,19 @@ For more information on how these hooks work and on how your `hooks` dictionary 
 An example `bbqsql_hooks.py` file might look like this:
 
 ```python
-    # file: bbqsql_hooks.py
-    import time
+# file: bbqsql_hooks.py
+import time
 
-    def my_pre_hook(req):
-        """
-        this hook replaces a placeholder with the current time
-        expecting the url to look like this:
-            http://www.google.com?k=v&time=PLACEHOLDER
-        """
-        req.url.replace('PLACEHOLDER',str(time.time()))
-        return req
+def my_pre_hook(req):
+    """
+    this hook replaces a placeholder with the current time
+    expecting the url to look like this:
+        http://www.google.com?k=v&time=PLACEHOLDER
+    """
+    req.url.replace('PLACEHOLDER',str(time.time()))
+    return req
 
-    hooks = {'pre_request':my_pre_hook}
+hooks = {'pre_request':my_pre_hook}
 ```
 
 ## What's up with the name? ##
