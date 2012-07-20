@@ -5,11 +5,16 @@
 - [What is BBQSQL?](#what-is-bbqsql)
 - [Overview of Readme](#overview-of-readme)
 - [High Level Usage](#high-level-usage)
+- [Install](#install)
 - [BBQSQL Options](#bbqsql-options)
 - [Query Syntax Overview](#query-syntax-overview)
 - [HTTP Parameters](#http-parameters)
+- [Export Config](#export-config)
+- [Import Config](#import-config)
 - [Custom Hooks](#custom-hooks)
-- [What's up with the name?](#whats-up-with-the-name)
+- [Found a Bug?](#found-a-bug)
+- [Can I Help?](#can-i-help)
+- [What's Up with the Name?](#whats-up-with-the-name)
 
 ## What is BBQSQL?##
 
@@ -37,6 +42,12 @@ Must provide the usual information:
 - Proxies
 
 Then specify where the injection is going and what syntax we are injecting.  Read on for details.  
+
+## Install ##
+
+After you pull the tool from Github, you can install simply by typing:
+
+`python setup.py install`
 
 ## BBQSQL Options ##
 
@@ -169,6 +180,30 @@ Specify a tuple of username and password to be used for http basic authenticatio
 
 `("myusername","mypassword")`
 
+## Export Config ##
+
+After you have setup your attack in the UI, you can export the configuration file.  You will see the option when you run the tool.  The exported configuration file uses ConfigParser, and is easy to read.  An example configuration file can be seen below:
+
+`[Request Config]
+url = http://example.com/sqlivuln/index.php?username=user1&password=secret${injection}
+method = GET
+
+[HTTP Config]
+query = ' and ASCII(SUBSTR((SELECT data FROM data LIMIT 1 OFFSET ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} #
+technique = binary_search
+comparison_attr = size
+concurrency = 30`
+
+This is useful if you plan on resuming an attack or maybe just adjusting the query but don't want to go through the hassle of reconfiguring every option.  
+
+## Import Config ##
+
+You can also import a config from the command line or from the user interface.  To import a config from the command line just run bbqsl with the following options:
+
+`bbqsql -c config_file`
+
+When you load a config file either via command line or the user interface, the same validation routines are run on the paramters to make sure that are valid.  
+
 ## Custom Hooks ##
 
 Sometimes you need to do something really crazy. Maybe do you need to encrypt the values going into a field before sending the request or maybe you need to triple URL encode. Regardless, these situations make other tools impossible to use. BBQSQL allows you to define "hook" functions that the tool will call at various points throughout the request. For example, you can specify a `pre_request` function that takes the request as its argument, does whatever mutations are necessary, and returns the modified request to be sent on to the server.
@@ -208,16 +243,16 @@ def my_pre_hook(req):
 hooks = {'pre_request':my_pre_hook}
 ```
 
-## Found a bug? ##
+## Found a Bug? ##
 
 Submit any bug fixes or feature requests to https://github.com/Neohapsis/bbqsql/
 
-## Can I help? ##
+## Can I Help? ##
 
 Please!  We see this being a great starting place to build a fully capable sql injection framework.  Feel free to fork the code and we can merge your changes if they are useful.
 
 
-## What's up with the name? ##
+## What's Up With the Name? ##
 
 BBQ is absolutely delicious and so is SQL injection!
   
