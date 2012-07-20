@@ -112,6 +112,29 @@ def setprompt(category=None, text=None):
     prompt += bcolors.ENDC + " "
     return prompt
 
+def about():
+    '''define help, credits, and about'''
+    print "\n"*100
+    show_graphics()
+    print "\n"*5
+    print bcolors.BOLD + """    Help\n""" + bcolors.ENDC + """
+    For help, please view the Readme.MD file for usage examples
+    and detailed information on how the tool works
+
+    If you are still running into issues, have ideas for improvments,
+    or just feature requests you can submit here:
+    """ + bcolors.BOLD + """https://github.com/Neohapsis/bbqsql/issues\n\n""" + bcolors.ENDC 
+
+    print bcolors.BOLD + """    Credits\n""" + bcolors.ENDC + """
+    Special thanks to David Kennedy, Kenneth Reitz, Neohapsis, Wikipedia, and
+    everyone who has helped file bug fixes.  Oh, and ribs.  Mmmm ribs! \n\n""" 
+
+    print bcolors.BOLD + """    About\n""" + bcolors.ENDC + """
+    BBQSQL version 1.0
+    https://github.com/Neohapsis/bbqsql
+    \n\n""" 
+
+    raw_input("Press any key to continue")
 
 class CreateMenu:
     def __init__(self, text, menu):

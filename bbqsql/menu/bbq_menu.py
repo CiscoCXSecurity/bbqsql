@@ -174,8 +174,8 @@ class bbqMenu():
                         except KeyboardInterrupt:
                             ok = False
                         if ok and ok[0] != 'n':
-                            print bbq
-                            time.sleep(5)
+                            #print bbq
+                            #time.sleep(5)
                             results = bbq.run()
                             #output to a file if thats what they're into
                             if bbqsql_config['csv_output_file']['value'] is not None:
@@ -186,6 +186,8 @@ class bbqMenu():
                         error = bbq.error
                     # delete stuff
                     del(bbq)
+                if choice == '6':
+                    bbq_core.about()
 
             bbq_core.ExitBBQ(0)
             

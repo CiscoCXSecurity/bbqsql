@@ -13,7 +13,7 @@ main_menu = ['Setup HTTP Parameters',
          'Export Config',
          'Import Config',
 	     'Run Exploit',
-	     'Help, Credits, and About (not implemented)']	     
+	     'Help, Credits, and About']	     
 
 
 query_text = """
