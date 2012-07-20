@@ -206,6 +206,10 @@ def my_pre_hook(req):
 
 hooks = {'pre_request':my_pre_hook}
 ```
+## Can I help? ##
+
+Please!  We see this being a great starting place to build a fully capable sql injection framework.  Feel free to fork the code and we can merge your changes if they are useful.
+
 
 ## What's up with the name? ##
 
