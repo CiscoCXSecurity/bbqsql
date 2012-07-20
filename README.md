@@ -87,13 +87,9 @@ The query syntax is based around placeholders which tell BBQSQL how to execute t
 You need to provide the following placeholders of information  in order for the attack to work.  Once you put these in your query, bbqSQL will do the rest:
 
 `${row_index}`: This tells bbqSQL to iterate rows here.  Since we are using LIMIT we can view n number of row depending on ${row_index} value.
-
 `${char_index}`: This tells bbqSQL which character from the subselect to query.  
-
 `${char_val}`: This tells bbqSQL where to compare the results  from the subselect to validate the result.
-
 `${comparator}`: This is how you tell BBQSQL to compare the responses to determine if the result is true or not.  By default, the > symbol is used. 
-
 `${sleep}`: This is optional but tells bbqSQL where to insert the number of seconds to sleep when performing time based SQL injection.
 
 Not all of these place holders are required.  For example, if you have discovered semi-blind boolean based SQL injection you can omit the `${sleep}` parameter.  
@@ -123,9 +119,7 @@ Provide files to be sent with the request. Set the value to the path and BBQSQL 
 HTTP headers to be sent with the requests.  This can be a string or a dictionary.  For example:
 
 `{"User-Agent":"bbqsql"}`
-
 or
-
 `"User-Agent: bbqsql"`
 
 ### cookies ###
@@ -133,9 +127,7 @@ or
 A dictionary or string of cookies to be sent with the request.  For example:
 
 `{"PHPSESSIONID":"123123"}`
-
 or
-
 `PHPSESSIONID=123123;JSESSIONID=foobar`
 
 ### url ###
@@ -157,9 +149,7 @@ Specify an http proxy to be used for the request as a dictionary.  For example:
 Specify post data to be sent along with the request.  This can be a string or a dictionary.  For example:
 
 `{"input_field":"value"}`
-
 or
-
 `input_field=value`
 
 ### method ###
