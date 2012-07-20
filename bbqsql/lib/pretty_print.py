@@ -57,6 +57,9 @@ class PrettyTable:
 			table = self.get_table_callback(color=True)
 			#table = self.get_table_callback()
 
+			# keep it short
+			if len(table)>100: table = table[-100:]
+
 			table = filter(self.row_filter,table)
 
 			#figure out how many new lines are needed to be printed before the table data
