@@ -110,11 +110,11 @@ BBQSQL has many http parameters you can configure when setting up your attack.  
 
 You specify where you want the injection query to be inserted by using the template `${injection}`.  Without the injection template the tool wont know where to insert the query.  
 
-# files #
+### files ###
 
 Provide files to be sent with the request. Set the value to the path and BBQSQL will take care of opening/including the file.
 
-# headers #
+### headers ###
 
 HTTP headers to be sent with the requests.  This can be a string or a dictionary.  For example:
 
@@ -124,7 +124,7 @@ or
 
 `"User-Agent: bbqsql"`
 
-# cookies #
+### cookies ###
 
 A dictionary or string of cookies to be sent with the request.  For example:
 
@@ -134,21 +134,21 @@ or
 
 `PHPSESSIONID=123123;JSESSIONID=foobar`
 
-# url #
+### url ###
 
 Specify a url that the requests should be sent to. 
 
-# allow_redirects #
+### allow_redirects ###
 
 This is a boolean that determines wether http redirects will be follwed when making requests.
 
-# proxies #
+### proxies ###
 
 Specify an http proxy to be used for the request as a dictionary.  For example:
 
 `{"http": "10.10.1.10:3128","https": "10.10.1.10:1080"}`
 
-# data #
+### data ###
 
 Specify post data to be sent along with the request.  This can be a string or a dictionary.  For example:
 
@@ -158,6 +158,17 @@ or
 
 `input_field=value`
 
+### method ###
+
+Specify the method for the http request.  Valid methods are 
+
+`'get','options','head','post','put','patch','delete'`
+
+### auth ###
+
+Specify a tuple of username and password to be used for http basic authentication. For example:
+
+`("myusername","mypassword")`
 
 ## Custom Hooks ##
 
