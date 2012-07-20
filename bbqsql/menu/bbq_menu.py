@@ -42,12 +42,31 @@ class bbqMenu():
                 bvalid = bbqsql_config.validate()
                 valid = rvalid and bvalid
 
-                if results: 
-                    # keepin it short
-                    if len(results) > 100:
-                        print results[-100:]
-                    else:
-                        print results
+                # Big results?  throw that in a csv file!
+                if results and len(results) <= 100:
+                    print results
+                elif results:
+                    print '\n\nbbqsql recieved ' + str(len(results)) + ' rows of data, results truncated to last 100'
+                    print results[-100:]
+                    print '\n\nplease provide a filename so we can save all the results for you'
+                    try:
+                        import readline
+                        readline.parse_and_bind('tab: complete')
+                    except ImportError:
+                        print 'readline module not found'
+                        pass
+                    try:
+                        readline.parse_and_bind('tab: complete')
+                        fname = raw_input('CSV file name [./results.csv]: ')
+                    except:
+                        print 'something went wrong, didn't write results to a file'
+                        pass
+
+                    if fname is not None:
+                        f = open(fname,'w')
+                        f.write("\n".join(",",results))
+                        f.close()
+
 
                 if error: print bbq_core.bcolors.RED+error+ bbq_core.bcolors.ENDC
 
