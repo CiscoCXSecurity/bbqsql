@@ -42,7 +42,13 @@ class bbqMenu():
                 bvalid = bbqsql_config.validate()
                 valid = rvalid and bvalid
 
-                if results: print results
+                if results: 
+                    # keepin it short
+                    if len(results) > 100:
+                        print results[-100:]
+                    else:
+                        print results
+
                 if error: print bbq_core.bcolors.RED+error+ bbq_core.bcolors.ENDC
 
                 if run_config:
