@@ -210,7 +210,8 @@ hooks = {'pre_request':my_pre_hook}
 
 ## Found a bug? ##
 
-Submit any bug fixes or feature requests to [https://github.com/Neohapsis/bbqsql/]
+Submit any bug fixes or feature requests to https://github.com/Neohapsis/bbqsql/
+
 ## Can I help? ##
 
 Please!  We see this being a great starting place to build a fully capable sql injection framework.  Feel free to fork the code and we can merge your changes if they are useful.
