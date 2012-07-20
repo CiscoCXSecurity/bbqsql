@@ -17,7 +17,7 @@ Blind SQL injection can be a pain to exploit. When the available tools work they
 BBQSQL is a blind SQL injection framework written in Python.  It is extremely useful when attacking tricky SQL injection vulnerabilities. BBQSQL is also a semi-automatic tool, allowing quite a bit of customization for those hard to trigger SQL injection findings.  The tool is built to be database agnostic and is extremely versatile.  It also has an intuitive UI to make setting up attacks much easier.  Python gevent is also implemented, making BBQSQL extremely fast.
 
 ## Overview of Readme ##
-We tried to write the tool in such a way that it would be very self explanatory when seeing up an attack in the UI.  However, for sake of thoroughness we have included a detailed Readme that should provide you additional insight on the specifics of each configuration option.  One thing to note is that every configuration option in the UI has a description associated with it, so if you do choose to fire up the tool without reading this page you should be able to hack your way through an attack.  
+We tried to write the tool in such a way that it would be very self explanatory when setting up an attack in the UI.  However, for sake of thoroughness we have included a detailed Readme that should provide you additional insight on the specifics of each configuration option.  One thing to note is that every configuration option in the UI has a description associated with it, so if you do choose to fire up the tool without reading this page you should be able to hack your way through an attack.  
 
 ## High Level Usage ##
 
@@ -55,13 +55,15 @@ BBQSQL utilizes two techniques when conducting a blind SQL injection attack.  Th
 
 The second technique you can use is frequency_search.  Frequency searching is based on an analysis of the English language to determine the frequency in which a letter will occur.  This search method is very fast against non-entropic data, but can be slow against non-english or obfuscated data.
 
-You can specify either `binary_search1` or `frequency_search` as the value for this parameter.  
+You can specify either `binary_search` or `frequency_search` as the value for this parameter.  
 
 ### comparison_attr ###
 
 This specifies the type of SQL injection you have discovered.  Here you can set which attribute of the http response bbqsql should look at to determine true/false.  
 
 You can specify: `status_code`, `url`, `time`, `size`, `text`, `content`, `encoding`, `cookies`, `headers`, or `history`
+
+If you have identified sql injection that results in a different server status code set 'status_code' here.  If the cookie is different set 'cookie'.  If the response size is different set 'size'.  You get the jist.
 
 ### concurrency ###
 
@@ -98,7 +100,7 @@ Sometimes you need to do something really crazy. Maybe do you need to encrypt th
 
 To implement this, just create a file named `bbqsql_hooks.py` in your current working directory. Here you can define your callback functions for the hooks. Then, at the bottom of this file, add a dict named `hooks` whose format is `{'hook_name':hook_function}`.
 
-When you run BBQSQL, it will look in your current directory (as well as your normal Python path) for for file named `bbqsql_hooks.py` and will import from it the dict named `hooks`. 
+When you run BBQSQL, it will look in your current directory (as well as your normal Python path) for file named `bbqsql_hooks.py` and will import from it the dict named `hooks`. 
 
 
 The following hooks are made available:
