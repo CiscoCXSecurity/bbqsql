@@ -121,7 +121,7 @@ def about():
     For help, please view the Readme.MD file for usage examples
     and detailed information on how the tool works
 
-    If you are still running into issues, have ideas for improvments,
+    If you are still running into issues, have ideas for improvements,
     or just feature requests you can submit here:
     """ + bcolors.BOLD + """https://github.com/Neohapsis/bbqsql/issues\n\n""" + bcolors.ENDC 
 
