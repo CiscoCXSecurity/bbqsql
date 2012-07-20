@@ -94,6 +94,71 @@ You need to provide the following placeholders of information  in order for the 
 
 Not all of these place holders are required.  For example, if you have discovered semi-blind boolean based SQL injection you can omit the `${sleep}` parameter.  
 
+## HTTP Parameters ##
+
+BBQSQL has many http parameters you can configure when setting up your attack.  At a minimum you must provide the URL, where you want the injection query to run, and the method.  The following options can be set:
+
+ - files
+ - headers
+ - cookies
+ - url
+ - allow_redirects
+ - proxies
+ - data
+ - method
+ - auth
+
+You specify where you want the injection query to be inserted by using the template `${injection}`.  Without the injection template the tool wont know where to insert the query.  
+
+# files #
+
+Provide files to be sent with the request. Set the value to the path and BBQSQL will take care of opening/including the file.
+
+# headers #
+
+HTTP headers to be sent with the requests.  This can be a string or a dictionary.  For example:
+
+`{"User-Agent":"bbqsql"}`
+
+or
+
+`"User-Agent: bbqsql"`
+
+# cookies #
+
+A dictionary or string of cookies to be sent with the request.  For example:
+
+`{"PHPSESSIONID":"123123"}`
+
+or
+
+`PHPSESSIONID=123123;JSESSIONID=foobar`
+
+# url #
+
+Specify a url that the requests should be sent to. 
+
+# allow_redirects #
+
+This is a boolean that determines wether http redirects will be follwed when making requests.
+
+# proxies #
+
+Specify an http proxy to be used for the request as a dictionary.  For example:
+
+`{"http": "10.10.1.10:3128","https": "10.10.1.10:1080"}`
+
+# data #
+
+Specify post data to be sent along with the request.  This can be a string or a dictionary.  For example:
+
+`{"input_field":"value"}`
+
+or
+
+`input_field=value`
+
+
 ## Custom Hooks ##
 
 Sometimes you need to do something really crazy. Maybe do you need to encrypt the values going into a field before sending the request or maybe you need to triple URL encode. Regardless, these situations make other tools impossible to use. BBQSQL allows you to define "hook" functions that the tool will call at various points throughout the request. For example, you can specify a `pre_request` function that takes the request as its argument, does whatever mutations are necessary, and returns the modified request to be sent on to the server.
