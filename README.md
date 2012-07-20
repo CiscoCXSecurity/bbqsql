@@ -7,7 +7,7 @@
 - [High Level Usage](#high-level-usage)
 - [BBQSQL Options](#bbqsql-options)
 - [Query Syntax Overview](#query-syntax-overview)
-- [HTTP Parameters]{#http-parameters}
+- [HTTP Parameters](#http-parameters)
 - [Custom Hooks](#custom-hooks)
 - [What's up with the name?](#whats-up-with-the-name)
 
