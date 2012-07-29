@@ -59,7 +59,7 @@ class bbqMenu():
                         readline.parse_and_bind('tab: complete')
                         fname = raw_input('CSV file name [./results.csv]: ')
                     except:
-                        print 'something went wrong, didn't write results to a file'
+                        print "something went wrong, didn't write results to a file"
                         pass
 
                     if fname is not None:
