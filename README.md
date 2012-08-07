@@ -45,9 +45,25 @@ Then specify where the injection is going and what syntax we are injecting.  Rea
 
 ## Install ##
 
-After you pull the tool from Github, you can install simply by typing:
+First, there are a few dependancies to install. Run these commands or install `gevent`,`requests`, and `grequests` via some other method.
 
-`python setup.py install`
+    sudo pip install gevent
+    
+    sudo pip install requests
+    
+    sudo pip install grequests
+    
+Depending on your system, you might need compile gevent by hand or install it through another package manager (`sudo apt-get install python-gevent`)
+
+Next, you will want to pull the bbqsql code from github:
+
+    git clone git://github.com/Neohapsis/bbqsql.git
+    
+Then cd into this directory and run:
+
+    sudo python ./setup.py install
+
+I need to upload a working copy of the tool to pip and get all the depnedancies figured out for auto-installation...
 
 ## BBQSQL Options ##
 
