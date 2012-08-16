@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='BBQSQL',
-      version='1.0',
+      version='1.1',
       license='BSD',
       author='Ben Toews (mastahyeti)',
       author_email='mastahyeti@gmail.com',

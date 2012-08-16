@@ -210,9 +210,9 @@ When you load a config file either via command line or the user interface, the s
 
 Sometimes you need to do something really crazy. Maybe do you need to encrypt the values going into a field before sending the request or maybe you need to triple URL encode. Regardless, these situations make other tools impossible to use. BBQSQL allows you to define "hook" functions that the tool will call at various points throughout the request. For example, you can specify a `pre_request` function that takes the request as its argument, does whatever mutations are necessary, and returns the modified request to be sent on to the server.
 
-To implement this, just create a file named `bbqsql_hooks.py` in your current working directory. Here you can define your callback functions for the hooks. Then, at the bottom of this file, add a dict named `hooks` whose format is `{'hook_name':hook_function}`.
+To implement this, create a Python file and specify hook functions. The available function names are listed bellow. In your hooks file, you can define as few or as many of these hooks functions as you would like. Then, in the bbqsql_options section of the menue, you can specify the location of your hooks_file. BBQSQL will suck in this file and use whatever hooks you defined.
 
-When you run BBQSQL, it will look in your current directory (as well as your normal Python path) for file named `bbqsql_hooks.py` and will import from it the dict named `hooks`. 
+It is important that the hooks functions you specify have the exact names specified bellow or else BBQSQL won't know which hook to call when. The `args` function receives one parameter that contains all the arguments that are being used to create the HTTP request. The `pre_request` function receives the request object before it is sent. The `post_request` function receives the request object after it has been sent. The `response` function receives the response object before it is returned to BBQSQL.
 
 
 The following hooks are made available:
@@ -227,22 +227,20 @@ The following hooks are made available:
 
 For more information on how these hooks work and on how your `hooks` dictionary should look, check out the [requests library documentation on its hooks](http://docs.python-requests.org/en/latest/user/advanced/#event-hooks)
 
-An example `bbqsql_hooks.py` file might look like this:
+An example hooks file might look like this:
 
 ```python
-# file: bbqsql_hooks.py
+# file: hooks.py
 import time
 
-def my_pre_hook(req):
+def pre_request(req):
     """
     this hook replaces a placeholder with the current time
     expecting the url to look like this:
         http://www.google.com?k=v&time=PLACEHOLDER
     """
-    req.url.replace('PLACEHOLDER',str(time.time()))
+    req.url = req.url.replace('PLACEHOLDER',str(time.time()))
     return req
-
-hooks = {'pre_request':my_pre_hook}
 ```
 
 ## Found a Bug? ##
