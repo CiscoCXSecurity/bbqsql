@@ -49,7 +49,7 @@ This should be straight forward, but what ever is. Try running:
 
     sudo pip install bbqsql
 
-If that doesn't work for you, you can install from source. The tool requires `gevent`,`requests`, and `grequests`. 
+If that doesn't work for you, you can install from source. The tool requires `gevent`,`requests`. 
 
 ## BBQSQL Options ##
 
