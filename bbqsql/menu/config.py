@@ -11,6 +11,7 @@ from urlparse import urlparse
 from urllib import quote
 from gevent import socket
 import os
+import sys
 
 response_attributes = ['status_code', 'url', 'time', 'size', 'text', 'content', 'encoding', 'cookies', 'headers', 'history']
 
@@ -217,11 +218,6 @@ class RequestsConfig:
                 if self.config[key]['required']:
                     valid = False
                     if not quiet: print bcolors.RED + ("You must specify a value for '%s'" % key) + bcolors.ENDC
-                
-            # if we have an object of the wrong type, we have a problem
-            elif type(self.config[key]['value']) not in self.config[key]['types']:
-                valid = False
-                if not quiet: print bcolors.RED + ("You gave a value of an illeage type for '%s'" % key )+ bcolors.ENDC
             
             # if the config keys validator fails, we have a problem
             elif self.config[key]['validator']:
@@ -237,12 +233,7 @@ class RequestsConfig:
         # make sure we're on the up and up
         kwargs = {}
         for key in self.config:
-            if \
-                self.config[key]['value'] != None \
-                and type(self.config[key]['value']) in self.config[key]['types'] \
-                and (\
-                    self.config[key]['validator'] == None \
-                    or self.config[key]['validator'](self.config[key])):
+            if self.config[key]['value'] != None:
                 kwargs[key] = self.config[key]['value']
         return kwargs
 
@@ -322,8 +313,6 @@ class RequestsConfig:
         return self.config[key]
 
     def __setitem__(self,key,val):
-        if key not in self.config:
-            raise KeyError
         self.config[key] = val
     
     def __setattr__(self,key,value):
@@ -339,6 +328,65 @@ class RequestsConfig:
     
     def __str__(self):
         return self.__repr__()
+
+@debug
+def validate_hooks_file(thing):
+    # don't want to import multiple times. this also keeps track of if it was successful
+    if thing['value'] and thing['value'] is not thing['last_imported']:
+        # cannonicalize the path
+        full_path = os.path.realpath(os.path.expanduser(os.path.expandvars(thing['value'])))
+
+        #make sure its real
+        if not os.path.exists(full_path):
+            raise ConfigError("The hooks_file path you specified doesn't exist. try again")
+
+        # grab just the dir portion of the path
+        head,tail = os.path.split(full_path)
+
+        # prepend this to our search path
+        sys.path.insert(0,head)
+
+        # get the module name from the file name
+        mname = tail.rsplit('.',1)
+
+        # make sure they gave a good file
+        if len(mname) != 2 or mname[1] != 'py':
+            raise ConfigError("The hooks_file needs to be a python file. It should look like ~/foo/bar/myhooks.py")
+
+        # try importing it
+        try:
+            exec "import %s as new_user_hooks" % mname[0]
+        except Exception,e:
+            raise ConfigError("You have the following problem with your hooks file: %s - %s" % (str(type(e)),e.message))
+
+        # extract the callable objects that don't start with _ from the newly imported module
+        new_hooks_dict = {}
+        for f_name in dir(new_user_hooks):
+            f = getattr(new_user_hooks,f_name)
+            if hasattr(f,'__call__') and f.__module__ == mname[0] and not f_name.startswith('_'):
+                new_hooks_dict[f_name] = f
+
+        # initialize or reinitialize the thing['hooks_dict']
+        if not thing['hooks_dict'] or raw_input('would you like to wipe existing hooks? (y/n) [n]: ') == 'y':
+                thing['hooks_dict'] = {}
+
+        # merge our new hooks with our existing hooks
+        thing['hooks_dict'].update(new_hooks_dict)
+
+        # clean up 
+        new_user_hooks = None
+
+        # specify the file we just imported
+        thing['last_imported'] = thing['value']
+
+        print "Successfully imported hooks from %s" % full_path
+        print thing['hooks_dict']
+
+    if thing['value'] == '':
+        thing['hooks_dict'] = None
+        thing['value'] = None
+
+    return True
 
 @debug
 def validate_concurrency(thing):
@@ -377,6 +425,15 @@ def validate_query(thing):
 
 class bbqsqlConfig(RequestsConfig):
     config = {\
+        'hooks_file':\
+            {'name':'hooks_file',\
+            'value':None,\
+            'description':'Specifies the .py file where the requests hooks exist. This file should contain functions like `pre_request`,`post_request`,`args`,....',\
+            'types':[str],\
+            'required':False,\
+            'validator':validate_hooks_file,
+            'last_imported':None,\
+            'hooks_dict':None},\
         'concurrency':\
             {'name':'concurrency',\
             'value':30,\

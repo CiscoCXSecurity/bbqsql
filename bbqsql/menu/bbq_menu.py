@@ -14,7 +14,7 @@ from copy import copy
 
 
 # config params that are only used in the menu and shouldn't be passed along to BlindSQLi or other parts of bbqsql
-exclude_parms = ['csv_output_file']
+exclude_parms = ['csv_output_file','hooks_file']
 
 # main menu
 class bbqMenu():
@@ -164,32 +164,20 @@ class bbqMenu():
                     # Run Exploit
                     results = None
 
-                    # try to import the user defined hooks
-                    try:
-                        cwd = os.getcwd()
-                        if cwd not in sys.path:
-                            sys.path.append(cwd)
-                        from bbqsql_hooks import hooks as user_defined_hooks
-                        print "Hooks Loaded!!!"
-                    except ImportError:
-                        pass
+                    # add user defined hooks to our config
+                    if bbqsql_config['hooks_file'] and bbqsql_config['hooks_file']['hooks_dict']:
+                        bbqsql_config['hooks'] = {'value':bbqsql_config['hooks_file']['hooks_dict'],'name':'hooks','validator':lambda x:True}
 
                     # combine them into one dictionary
                     attack_config = {}
                     attack_config.update(requests_config.get_config())
                     attack_config.update(bbqsql_config.get_config())
 
-                    # add user defined hooks to our config
-                    try:
-                        attack_config['hooks'] = user_defined_hooks
-                        print "Hooks Set!"
-                    except NameError:
-                        pass
-
                     #delete unwanted config params before sending the config along
                     for key in exclude_parms:
                         if key in attack_config:
                             del(attack_config[key])
+
                     # launch attack
                     bbq = bbqsql.BlindSQLi(**attack_config)
                     if not bbq.error:
