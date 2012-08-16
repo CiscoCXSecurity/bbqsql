@@ -3,7 +3,6 @@ from .query import Query
 from bbqsql import utilities
 from bbqsql import settings
 
-import grequests
 import requests
 import gevent 
 
@@ -89,9 +88,38 @@ class Requester(object):
             kwargs['hooks']['post_request'] = wrapped_post
 
         else:
-            kwargs['hooks']['post_request'] = requests_post_hook            
+            kwargs['hooks']['post_request'] = requests_post_hook
 
-        self.request = grequests.request(*args,**kwargs)
+        #
+        # moving things to a session for performance (reduce dns lookups)
+        #
+
+        self.request_kwargs = {}
+
+        #pull out any other Query objects
+        self.query_objects = {}
+        for elt in [q for q in kwargs if isinstance(kwargs[q],Query)]:
+            self.request_kwargs[elt] = kwargs[elt]
+            del(kwargs[elt])
+
+        # pull out the url and method
+        if 'method' in kwargs:
+            self.request_kwargs['method'] = kwargs['method']
+            del(kwargs['method'])
+        if 'url' in kwargs:
+            self.request_kwargs['url'] = kwargs['url']
+            del(kwargs['url'])
+
+        # all the same prep stuff that grequests.patched does
+        # self.request_kwargs['return_response'] = False
+        self.request_kwargs['prefetch'] = True
+
+        config = kwargs.get('config', {})
+        config.update(safe_mode=True)
+
+        kwargs['config'] = config
+
+        self.session = requests.session(*args,**kwargs)
     
     @utilities.debug 
     def make_request(self,value="",case=None,rval=None,debug=False):
@@ -102,29 +130,30 @@ class Requester(object):
         this is only really used for recursing by _test in the case of an error. Depth keeps track of 
         recursion depth when we make multiple requests after a failure. 
         '''
-        new_request = copy(self.request)
 
-        #iterate over the __dict__ of the request and compile any elements that are 
-        #query objects.
-        for elt in [q for q in new_request.__dict__ if isinstance(new_request.__dict__[q],Query)]:
-            opts = new_request.__dict__[elt].get_options()
+        new_request_kwargs = copy(self.request_kwargs)
+
+        #iterate over the request_kwargs and compile any elements that are query objects.
+        for k in [e for e in new_request_kwargs if isinstance(new_request_kwargs[e],Query)]:
+            opts = new_request_kwargs[k].get_options()
             for opt in opts:
                 opts[opt] = value
-            new_request.__dict__[elt].set_options(opts)
-            new_request.__dict__[elt] = new_request.__dict__[elt].render()
+            new_request_kwargs[k].set_options(opts)
+            new_request_kwargs[k] = new_request_kwargs[k].render()
             if debug:
-                print "Injecting into '%s' parameter" % elt
-                print "It looks like this: %s" % new_request.__dict__[elt]
+                print "Injecting into '%s' parameter" % k
+                print "It looks like this: %s" % new_request_kwargs[k]
 
-        #send request.
-        glet = grequests.send(new_request)
-        glet.join()
-        if not glet.get() and type(new_request.response.error) is requests.exceptions.ConnectionError:
-            raise utilities.SendRequestFailed("looks like you have a problem")
+        response = self.session.request(**new_request_kwargs)
+
+        #glet = grequests.send(new_request)
+        #glet.join()
+        #if not glet.get() and type(new_request.response.error) is requests.exceptions.ConnectionError:
+        #    raise utilities.SendRequestFailed("looks like you have a problem")
 
         #see if the response was 'true'
         if case is None:
-            case = self._test(new_request.response)
+            case = self._test(response)
             rval = self.cases[case]['rval']
 
         if debug and case:
@@ -133,7 +162,7 @@ class Requester(object):
             print "\n"
 
 
-        self._process_response(case,rval,new_request.response)
+        self._process_response(case,rval,response)
 
         return self.cases[case]['rval']
 
