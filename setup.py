@@ -11,5 +11,5 @@ setup(name='BBQSQL',
       url='http://github.com/neohapsis/bbqsql',
       packages=['bbqsql','bbqsql.lib','bbqsql.menu'],
       scripts=['scripts/bbqsql'],
-      install_requires=['gevent','requests']
+      install_requires=['gevent','requests','argparse']
      )

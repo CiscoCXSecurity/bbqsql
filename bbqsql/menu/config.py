@@ -464,7 +464,7 @@ class bbqsqlConfig(RequestsConfig):
             'validator':validate_search_type},\
         'query':\
             {'name':'query',\
-            'value':"' and ASCII(SUBSTR((SELECT data FROM data LIMIT 1 OFFSET ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} #",\
+            'value':"' and ASCII(SUBSTR((SELECT data FROM data ORDER BY id LIMIT 1 OFFSET ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} #",\
             'description':text.query_text,\
             'types':[str],\
             'required':True,\
