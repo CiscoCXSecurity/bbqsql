@@ -133,6 +133,10 @@ class Requester(object):
 
         new_request_kwargs = copy(self.request_kwargs)
 
+        # keep track of which keys were dynamic so we know which ones to print after we make the request.
+        # we do this so hooks can process the requests before we print them for debugging...
+        keys_to_debug = []
+
         #iterate over the request_kwargs and compile any elements that are query objects.
         for k in [e for e in new_request_kwargs if isinstance(new_request_kwargs[e],Query)]:
             opts = new_request_kwargs[k].get_options()
@@ -140,11 +144,15 @@ class Requester(object):
                 opts[opt] = value
             new_request_kwargs[k].set_options(opts)
             new_request_kwargs[k] = new_request_kwargs[k].render()
-            if debug:
-                print "Injecting into '%s' parameter" % k
-                print "It looks like this: %s" % new_request_kwargs[k]
+
+            keys_to_debug.append(k)
 
         response = self.session.request(**new_request_kwargs)
+
+        if debug:
+            for k in keys_to_debug:
+                print "Injecting into '%s' parameter" % k
+                print "It looks like this: %s" % getattr(response.request,k)
 
         #glet = grequests.send(new_request)
         #glet.join()
