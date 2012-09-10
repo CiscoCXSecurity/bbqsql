@@ -74,7 +74,7 @@ class Requester(object):
         # if they defined pre_request hook, we wrap it with ours
         if 'pre_request' in kwargs['hooks']:
             orig_pre = kwargs['hooks']['pre_request']
-            wrapped_pre = lambda request:requests_pre_hook(orig_pre(request))
+            wrapped_pre = lambda request:orig_pre(requests_pre_hook(request))
             kwargs['hooks']['pre_request'] = wrapped_pre
 
         # otherwise, we just stick with our own hook
@@ -84,7 +84,7 @@ class Requester(object):
         # same for post_request hooks
         if 'post_request' in kwargs['hooks']:
             orig_post = kwargs['hooks']['post_request']
-            wrapped_post = lambda request:requests_post_hook(orig_post(request))
+            wrapped_post = lambda request:orig_post(requests_post_hook(request))
             kwargs['hooks']['post_request'] = wrapped_post
 
         else:
