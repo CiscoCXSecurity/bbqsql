@@ -20,14 +20,14 @@ def requests_pre_hook(request):
     return request
 
 @utilities.debug 
-def requests_post_hook(request):
+def requests_response_hook(response):
     #hooks for the requests module to add some attributes
-    request.response.time = time() - request.start_time
-    if hasattr(request.response.content,'__len__'): 
-        request.response.size = len(request.response.content)
+    response.time = time() - response.request.start_time
+    if hasattr(response.content,'__len__'): 
+        response.size = len(response.content)
     else: 
-        request.response.size = 0
-    return request
+        response.size = 0
+    return response
 
 class EasyMath():
     def mean(self,number_list):
@@ -65,30 +65,18 @@ class Requester(object):
         self.comparison_attr = comparison_attr
         self.acceptable_deviation = acceptable_deviation
 
-        # we require our own hooks for keeping track of time. 
-        # if they defined hooks, we need to wrap them in our 
-        # hooks so they both get called
-
+        # make sure the hooks are lists, not just methods
         kwargs.setdefault('hooks',{})
 
-        # if they defined pre_request hook, we wrap it with ours
-        if 'pre_request' in kwargs['hooks']:
-            orig_pre = kwargs['hooks']['pre_request']
-            wrapped_pre = lambda request:orig_pre(requests_pre_hook(request))
-            kwargs['hooks']['pre_request'] = wrapped_pre
+        for key in ['pre_request','response']:
+            kwargs['hooks'].setdefault(key,[])
 
-        # otherwise, we just stick with our own hook
-        else:
-            kwargs['hooks']['pre_request'] = requests_pre_hook            
+            if hasattr(kwargs['hooks'][key],'__call__'):
+                kwargs['hooks'][key] = [kwargs['hooks'][key]]
 
-        # same for post_request hooks
-        if 'post_request' in kwargs['hooks']:
-            orig_post = kwargs['hooks']['post_request']
-            wrapped_post = lambda request:orig_post(requests_post_hook(request))
-            kwargs['hooks']['post_request'] = wrapped_post
+        kwargs['hooks']['pre_request'].append(requests_pre_hook)
 
-        else:
-            kwargs['hooks']['post_request'] = requests_post_hook
+        kwargs['hooks']['response'].append(requests_response_hook)
 
         #
         # moving things to a session for performance (reduce dns lookups)
