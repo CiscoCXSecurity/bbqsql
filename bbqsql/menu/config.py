@@ -1,6 +1,7 @@
 import bbq_core
 from bbq_core import bcolors
 import text
+import ast
 
 try:
     import readline
@@ -241,7 +242,13 @@ class RequestsConfig:
         '''take a dict of all the config parameters and apply it to the config object'''
         for key in config:
             if key in self.config:
-                self.config[key]['value'] = config[key]
+                if(self.config[key]['types'] == [str]):
+                    self.config[key]['value'] = config[key]
+                else:
+                    try:
+                        self.config[key]['value'] = ast.literal_eval(config[key])
+                    except (ValueError, SyntaxError):
+                        self.config[key]['value'] = config[key]
         self.validate()
     
     def run_config(self):
