@@ -90,13 +90,16 @@ class Requester(object):
             self.request_kwargs[elt] = kwargs[elt]
             del(kwargs[elt])
 
-        # pull out the url and method
+        # pull out the url, method and data
         if 'method' in kwargs:
             self.request_kwargs['method'] = kwargs['method']
             del(kwargs['method'])
         if 'url' in kwargs:
             self.request_kwargs['url'] = kwargs['url']
             del(kwargs['url'])
+        if 'data' in kwargs:
+            self.request_kwargs['data'] = kwargs['data']
+            del(kwargs['data'])
 
         # all the same prep stuff that grequests.patched does
         # self.request_kwargs['return_response'] = False
