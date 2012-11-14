@@ -265,6 +265,15 @@ class BooleanBlindTechnique:
         '''
         look at how many gevent "threads" are being used and add more rows to correct this
         '''
+
+        # if they don't specify row_index we assume only one row
+        if not self.query.has_option("row_index"):
+            self.char_gens.append(self._character_generator(0))
+            self.results.append([])
+            self.need_more_rows = False
+            return True
+
+        # figure out how many rows at a time we should start working on
         if self.row_len is not None:
             rows_to_work_on = self.concurrency // self.row_len
         else:
