@@ -1,5 +1,3 @@
-# file: text.py
-
 '''Text should be stored here'''
 
 from bbq_core import bcolors
@@ -23,11 +21,10 @@ that you already have identified SQL injection on a vulnerable
 parameter, and have tested a query that is successful.
 
 Below is an example query you can use to construct your query.
-In this example, the attacker is looking to select the database
-version:
+In this example, the attacker is looking to select hostname from a table called systems :
 
 """ + bcolors.RED + """
-' and ASCII(SUBSTR((SELECT data FROM data LIMIT 1 OFFSET 
+' and ASCII(SUBSTR((SELECT hostname FROM systems LIMIT 1 OFFSET 
 ${row_index:1}),${char_index:1},1))${comparator:>}${char_val:0} #
 """ + bcolors.ENDC + """
 
