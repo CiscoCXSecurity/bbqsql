@@ -65,7 +65,7 @@ The name of a file to output the results to. Leave this blank if you dont want o
 
 ### technique ###
 
-BBQSQL utilizes two techniques when conducting a blind SQL injection attack.  The first and default technique used is binary_search.  [See Wikipedia](http://example.net/) for more information.
+BBQSQL utilizes two techniques when conducting a blind SQL injection attack.  The first and default technique used is binary_search.  [See Wikipedia](https://en.wikipedia.org/wiki/Binary_search_algorithm) for more information.
 
 The second technique you can use is frequency_search.  Frequency searching is based on an analysis of the English language to determine the frequency in which a letter will occur.  This search method is very fast against non-entropic data, but can be slow against non-english or obfuscated data.
 
