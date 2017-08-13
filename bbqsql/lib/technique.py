@@ -5,8 +5,8 @@ from bbqsql import utilities
 
 import gevent
 from gevent.event import AsyncResult,Event
-from gevent.coros import Semaphore
 from gevent.queue import Queue
+from gevent.lock import Semaphore
 from gevent.pool import Pool
 
 from time import time
