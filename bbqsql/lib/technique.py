@@ -5,7 +5,11 @@ from bbqsql import utilities
 
 import gevent
 from gevent.event import AsyncResult,Event
-from gevent.coros import Semaphore
+try:
+    from gevent.coros import Semaphore
+except ImportError:
+    from gevent.lock import Semaphore
+
 from gevent.queue import Queue
 from gevent.pool import Pool
 
